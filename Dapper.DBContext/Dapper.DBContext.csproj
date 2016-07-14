@@ -39,7 +39,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DapperContext.cs" />
+    <Compile Include="DapperDBContext.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="IDBContext.cs" />
     <Compile Include="IQuery.cs" />
