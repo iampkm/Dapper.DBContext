@@ -35,7 +35,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper">
+      <HintPath>..\packages\Dapper.1.50.1\lib\net45\Dapper.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic.Compatibility" />
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -50,8 +56,17 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Dialect\RowVersionTest.cs" />
+    <Compile Include="Dialect\SqlBuilderTest.cs" />
+    <Compile Include="Domain\Order.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Dapper.DBContext\Dapper.DBContext.csproj">
+      <Project>{225eeafd-8e27-4b12-abc3-52abf1487d2b}</Project>
+      <Name>Dapper.DBContext</Name>
+    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

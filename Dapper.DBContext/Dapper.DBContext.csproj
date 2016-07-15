@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Dapper, Version=1.50.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Dapper.1.50.1\lib\net45\Dapper.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -42,8 +46,13 @@
     <Compile Include="DapperDBContext.cs" />
     <Compile Include="Dialect\DapperContext.cs" />
     <Compile Include="Dialect\DapperUnitOfWork.cs" />
+    <Compile Include="Dialect\DataBase.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
+    <Compile Include="Dialect\Operator.cs" />
+    <Compile Include="Dialect\SqlBuilder.cs" />
+    <Compile Include="Helper\LamdaHelper.cs" />
+    <Compile Include="Helper\ReflectionHelper.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="IDBContext.cs" />
     <Compile Include="IQuery.cs" />
@@ -56,7 +65,9 @@
     <Compile Include="Transaction\IUnitOfWork.cs" />
     <Compile Include="Transaction\UnitOfWork.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

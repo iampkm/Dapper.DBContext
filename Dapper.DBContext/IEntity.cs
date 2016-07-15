@@ -6,20 +6,40 @@ using System.Threading.Tasks;
 
 namespace Dapper.DBContext
 {
-    internal interface IEntity
+    public interface IEntity
     {
-        
+
     }
 
-    public interface IEntity<TKey>:IEntity
+    public interface IEntity<TKey> : IEntity
     {
+        /// <summary>
+        /// 实体Id
+        /// </summary>
+        TKey Id { get; set; }       
+    }
+
+    public abstract class BaseEntity<TKey> : IEntity<TKey>
+    {
+        public BaseEntity() { }       
+        public BaseEntity(TKey id)
+        {
+            this.Id = id;         
+        }
         /// <summary>
         /// 实体Id
         /// </summary>
         public TKey Id { get; set; }
         /// <summary>
-        /// 时间戳，乐观并发使用
+        /// 版本乐观并发字段，无须开发显示设置值
         /// </summary>
-        public byte[] TimeStamp { get; set; }
+        public byte[] RowVersion { get; private set; }
+
+        //private long DateTimeToStamp(System.DateTime time)
+        //{
+        //    System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1));
+        //    return (long)(time - startTime).TotalSeconds;
+        //}
+
     }
 }
