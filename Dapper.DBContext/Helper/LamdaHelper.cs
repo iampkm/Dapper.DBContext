@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper.DBContext.Dialect;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -11,15 +12,16 @@ namespace Dapper.DBContext.Helper
    public class LamdaHelper
     {
 
-       public static string GetWhere<T>(Expression<Func<T, bool>> where)
+       public static List<QueryArgument> GetWhere<T>(Expression<Func<T, bool>> where)
        {
            var bExpr = GetBinaryExpression(where.Body);
-           List<string> sqls = new List<string>();
+           List<QueryArgument> sqls = new List<QueryArgument>();
            GetWhere(bExpr, sqls);
-           return string.Join(" ", sqls);
+
+            return sqls;
        }
 
-       public static void GetWhere(BinaryExpression body,  List<string> queryProperties)
+       public static void GetWhere(BinaryExpression body,  List<QueryArgument> queryProperties,string link="")
        {
           
            if (body.NodeType != ExpressionType.AndAlso && body.NodeType != ExpressionType.OrElse)
@@ -30,7 +32,7 @@ namespace Dapper.DBContext.Helper
               
                var propertyValue = GetValue(body.Right);
                var opr = GetSqlOperator(body.NodeType);
-             //  var link = GetSqlOperator(linkingType);
+              
 
                if (body.Left.NodeType == ExpressionType.Call)
                {
@@ -48,20 +50,28 @@ namespace Dapper.DBContext.Helper
 
                    }
                }
-                if (propertyValue is string || propertyValue is DateTime)
+               // 同一个属性，多次查询时，改变属性变量名
+                int index = 1;
+                while (queryProperties.Exists(n => n.Name.Contains(propertyName)))
                 {
-                    queryProperties.Add(string.Format("{0} {1} '{2}'", propertyName, opr, propertyValue));
+                    propertyName += string.Format("_{0}", index);
+                    index += 1;
                 }
-                else {
-                    queryProperties.Add(string.Format("{0} {1} {2}", propertyName, opr, propertyValue));
-                }              
+                queryProperties.Add(new QueryArgument(propertyName,propertyValue,opr,link));
+
+                //if (propertyValue is string || propertyValue is DateTime)
+                //{
+                //    queryProperties.Add(string.Format("{0} {1} '{2}'", propertyName, opr, propertyValue));
+                //}
+                //else {
+                //    queryProperties.Add(string.Format("{0} {1} {2}", propertyName, opr, propertyValue));
+                //}              
            }
            else
            {
                //递归解析
-               GetWhere(GetBinaryExpression(body.Left),  queryProperties);
-               // 连接中间
-               queryProperties.Add(string.Format(" {0}", GetSqlOperator(body.NodeType)));
+               GetWhere(GetBinaryExpression(body.Left),  queryProperties, GetSqlOperator(body.NodeType));
+           
                GetWhere(GetBinaryExpression(body.Right),  queryProperties);
 
            }

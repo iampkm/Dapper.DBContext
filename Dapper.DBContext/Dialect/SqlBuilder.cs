@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper.DBContext.Helper;
 using System.Collections;
+using System.Dynamic;
+
 namespace Dapper.DBContext.Dialect
 {
     public class SqlBuilder : ISqlBuilder
@@ -93,10 +95,24 @@ namespace Dapper.DBContext.Dialect
             return sql;
         }
 
-        public string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
-        {        
-          
-            return string.Format("where {0}", LamdaHelper.GetWhere<TEntity>(expression)) ;
+        public string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression,out object arguments) where TEntity : IEntity
+        {
+            var queryArgments = LamdaHelper.GetWhere<TEntity>(expression);
+          //  Dictionary<string, object> dic = new Dictionary<string, object>();
+            dynamic args = new ExpandoObject();
+            StringBuilder sql = new StringBuilder();
+            sql.Append("where ");
+            foreach (QueryArgument argument in queryArgments)
+            {
+                ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
+              
+                 sql.AppendFormat("{0} {2} @{3} {4}", getColumn(argument.Name), argument.Operator, argument.Name, argument.Link);
+               
+
+            }
+            arguments =args;
+
+            return sql.ToString() ;
         }
 
         public string BuildSelect<TEntity>() where TEntity : IEntity
@@ -131,6 +147,11 @@ namespace Dapper.DBContext.Dialect
         private string GetKey(Type modelType)
         {
             return string.Format(_encapsulation, ReflectionHelper.GetKeyName(modelType));
+        }
+
+        private string getColumn(string name)
+        {
+            return string.Format(_encapsulation, name);
         }
 
         private void SetDataBase()

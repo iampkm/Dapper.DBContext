@@ -13,7 +13,7 @@ namespace Dapper.DBContext.Dialect
       string BuildUpdate(Type modelType);
       string BuildDelete(Type modelType);
 
-      string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity;
+      string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity;
 
         string BuildSelect<TEntity>() where TEntity : IEntity;
 

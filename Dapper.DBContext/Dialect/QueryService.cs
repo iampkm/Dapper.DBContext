@@ -24,9 +24,10 @@ namespace Dapper.DBContext.Dialect
 
         public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
         {
-            string sql =string.Format("{0},{1}",this._builder.BuildSelect<TEntity>(), this._builder.BuildWhere<TEntity>(expression))  ;
+            object args = new object();
+            string sql =string.Format("{0} {1}",this._builder.BuildSelect<TEntity>(), this._builder.BuildWhere<TEntity>(expression,out args)) ;
             this._connection.Open();
-            var result = this._connection.Query<TEntity>(sql, null).FirstOrDefault();
+            var result = this._connection.Query<TEntity>(sql, args).FirstOrDefault();
             this._connection.Close();
             return result;
 
@@ -79,9 +80,10 @@ namespace Dapper.DBContext.Dialect
 
         public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
         {
-            string sql = string.Format("{0},{1}", this._builder.BuildSelect<TEntity>(), this._builder.BuildWhere<TEntity>(expression));
+            object args = new object();
+            string sql = string.Format("{0} {1}", this._builder.BuildSelect<TEntity>(), this._builder.BuildWhere<TEntity>(expression, out args));
             this._connection.Open();
-            var result = this._connection.Query<TEntity>(sql, null);
+            var result = this._connection.Query<TEntity>(sql, args);
             this._connection.Close();
             return result;
         }
