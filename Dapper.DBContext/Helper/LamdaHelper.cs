@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -20,7 +21,7 @@ namespace Dapper.DBContext.Helper
 
        public static void GetWhere(BinaryExpression body,  List<string> queryProperties)
        {
-
+          
            if (body.NodeType != ExpressionType.AndAlso && body.NodeType != ExpressionType.OrElse)
            {
                var propertyName = GetPropertyName(body);
@@ -47,9 +48,13 @@ namespace Dapper.DBContext.Helper
 
                    }
                }
-
-               queryProperties.Add(string.Format("{0} {1} {2}", propertyName, opr, propertyValue));
-               //  queryProperties.Add(new QueryParameter(link, propertyName, propertyValue, opr));
+                if (propertyValue is string || propertyValue is DateTime)
+                {
+                    queryProperties.Add(string.Format("{0} {1} '{2}'", propertyName, opr, propertyValue));
+                }
+                else {
+                    queryProperties.Add(string.Format("{0} {1} {2}", propertyName, opr, propertyValue));
+                }              
            }
            else
            {
@@ -132,5 +137,7 @@ namespace Dapper.DBContext.Helper
 
            return propertyName;
        }
+
+      
     }
 }

@@ -104,5 +104,20 @@ namespace Dapper.DBContext.Helper
             }
             return properties;
         }
+
+        public static List<object> GetForeignObject<T>(T model)
+        {
+            List<object> childObjects = new List<object>();
+            var propertieInfos = GetPropertyInfos(model);
+            foreach (var pi in propertieInfos)
+            {
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass)
+                {
+                    object childLists = pi.GetValue(model, null);
+                    childObjects.Add(childLists);
+                }
+            }
+            return childObjects;
+        }
     }
 }

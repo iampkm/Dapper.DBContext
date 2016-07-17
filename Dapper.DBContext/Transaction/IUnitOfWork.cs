@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace Dapper.DBContext.Transaction
 {
-   internal interface IUnitOfWork
+   public interface IUnitOfWork
     {
+        void Add(string sql, object paramObject, InsertMethodEnum method = InsertMethodEnum.Normal, string parentIdName = "");
+        void Commit();
     }
 }

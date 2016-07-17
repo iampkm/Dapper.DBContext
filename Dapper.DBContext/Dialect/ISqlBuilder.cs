@@ -13,6 +13,16 @@ namespace Dapper.DBContext.Dialect
       string BuildUpdate(Type modelType);
       string BuildDelete(Type modelType);
 
-      string BuildSelect<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity;
+      string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity;
+
+        string BuildSelect<TEntity>() where TEntity : IEntity;
+
+        /// <summary>
+        /// 获取ｋｅｙ　名
+        /// </summary>
+        /// <param name="modelType"></param>
+        /// <param name="isWarpDialect">是否包裹方言</param>
+        /// <returns></returns>
+        string GetKeyName(Type modelType,bool isWarpDialect);
     }
 }

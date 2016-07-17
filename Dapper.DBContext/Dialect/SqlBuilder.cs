@@ -16,6 +16,15 @@ namespace Dapper.DBContext.Dialect
         string _encapsulation;
         string _identitySql;
         string _getPagedSql;
+
+        public string KeyName
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         public SqlBuilder()
         {          
             SetDataBase();
@@ -84,14 +93,29 @@ namespace Dapper.DBContext.Dialect
             return sql;
         }
 
-        public string BuildSelect<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
+        public string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
+        {        
+          
+            return string.Format("where {0}", LamdaHelper.GetWhere<TEntity>(expression)) ;
+        }
+
+        public string BuildSelect<TEntity>() where TEntity : IEntity
         {
             var modelType = typeof(TEntity);
             string table = GetTable(modelType);
             var properties = ReflectionHelper.GetBuildSqlProperties(modelType);
             var columns = string.Join(",", properties.Select(p => string.Format(_encapsulation, p)));
-            var where = LamdaHelper.GetWhere<TEntity>(expression);
-            return string.Format("select {0} from {1} where {2}", columns, table, where);
+            return string.Format("select {0} from {1} ", columns, table);
+        }
+        public string GetKeyName(Type modelType, bool isWarpDialect)
+        {
+            if (isWarpDialect)
+            {
+                return GetKey(modelType);
+            }
+            else {
+                return ReflectionHelper.GetKeyName(modelType);
+            }
         }
 
         private string GetModelSqlKey(Type modelType, Operator operate)
@@ -143,5 +167,7 @@ namespace Dapper.DBContext.Dialect
 
 
         }
+
+       
     }
 }

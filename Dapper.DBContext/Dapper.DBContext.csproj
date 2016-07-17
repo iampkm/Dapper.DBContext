@@ -34,7 +34,9 @@
       <HintPath>..\packages\Dapper.1.50.1\lib\net45\Dapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="MySql.Data, Version=6.9.8.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,12 +46,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DapperDBContext.cs" />
+    <Compile Include="DBContextFactory.cs" />
+    <Compile Include="Dialect\ConnectionFactory.cs" />
     <Compile Include="Dialect\DapperContext.cs" />
     <Compile Include="Dialect\DapperUnitOfWork.cs" />
     <Compile Include="Dialect\DataBase.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
     <Compile Include="Dialect\Operator.cs" />
+    <Compile Include="Dialect\QueryArgument.cs" />
+    <Compile Include="Dialect\QueryService.cs" />
     <Compile Include="Dialect\SqlBuilder.cs" />
     <Compile Include="Helper\LamdaHelper.cs" />
     <Compile Include="Helper\ReflectionHelper.cs" />
@@ -62,11 +68,16 @@
     <Compile Include="Schema\NotMappedAttribute.cs" />
     <Compile Include="Schema\TableAttribute.cs" />
     <Compile Include="StringExtension.cs" />
+    <Compile Include="Transaction\InsertMethodEnum.cs" />
     <Compile Include="Transaction\IUnitOfWork.cs" />
+    <Compile Include="Transaction\SqlArgument.cs" />
     <Compile Include="Transaction\UnitOfWork.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
