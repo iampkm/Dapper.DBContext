@@ -56,6 +56,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="CustomerQueryServiceTest.cs" />
     <Compile Include="Dialect\RowVersionTest.cs" />
     <Compile Include="Dialect\SqlBuilderTest.cs" />
     <Compile Include="Domain\Order.cs" />

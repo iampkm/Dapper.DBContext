@@ -15,12 +15,10 @@ namespace Dapper.DBContext
         {
             string masterConnectionString = "";
             string readConnectionString = "";
-            IDbConnection writeConnection = new SqlConnection(masterConnectionString);
-            IDbConnection readConnection = new SqlConnection(readConnectionString);
-            IUnitOfWork iuow = new UnitOfWork("");
-            ISqlBuilder ibuilder = new SqlBuilder(DataBaseEnum.SqlServer);
-            IQuery query = new QueryService(readConnection, ibuilder);
-            DapperDBContext db = new DapperDBContext(query,iuow,ibuilder);
+            IConnectionFactory commandConnection = new ConnectionFactory(masterConnectionString);
+            IConnectionFactory queryConnection = new ConnectionFactory(masterConnectionString);          
+            IQuery query = new QueryService(readConnectionString);
+            IDBContext db = new DapperDBContext(masterConnectionString,query);
             return db;
         }
     }

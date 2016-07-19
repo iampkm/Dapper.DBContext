@@ -18,13 +18,20 @@ namespace Dapper.DBContext
         IQuery _iquery;
         IUnitOfWork _uow;
         ISqlBuilder _builder;
-        public DapperDBContext(IQuery iquery, IUnitOfWork unitOfWork, ISqlBuilder builder)
+        IConnectionFactory _connectionFactory;
+
+        public DapperDBContext(string connectionStringName)
         {
-            this._iquery = iquery;
-            this._uow = unitOfWork;
-            this._builder = builder;
+            this._connectionFactory = new ConnectionFactory(connectionStringName);
+            this._iquery = new QueryService(connectionStringName);
+            this._uow = new UnitOfWork(this._connectionFactory);
+            this._builder = this._connectionFactory.Builder; ;
         }
 
+        public DapperDBContext(string connectionStringName, IQuery iquery):this(connectionStringName)
+        {
+            this._iquery = iquery;          
+        }
         public void Insert<T>(T model) where T : IEntity
         {
             // 子类的外键名，必须是 父类名+默认ID名；

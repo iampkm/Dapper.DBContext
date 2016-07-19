@@ -14,11 +14,12 @@ namespace Dapper.DBContext.Transaction
     {
         List<SqlArgument> _sqlList = new List<SqlArgument>();
         private Dictionary<string, object> _ParentKeyDic;
-        string _connectionStringName;
-        public UnitOfWork(string connectionStringName)
+       // string _connectionStringName;
+        IConnectionFactory _connectionFactory;
+        public UnitOfWork(IConnectionFactory connectionFactory)
         {
             _ParentKeyDic = new Dictionary<string, object>();
-            this._connectionStringName = connectionStringName;
+            this._connectionFactory = connectionFactory;
         }
         public void Add(string sql, object paramObject, InsertMethodEnum method = InsertMethodEnum.Normal, string parentIdName = "")
         {
@@ -30,7 +31,7 @@ namespace Dapper.DBContext.Transaction
         {
             string executeSql = "";
             int executeResult = 0;
-            using (IDbConnection conn = ConnectionFactory.CreateConnection(this._connectionStringName))
+            using (IDbConnection conn = this._connectionFactory.Create())
             {
                 conn.Open();
                 IDbTransaction tran = conn.BeginTransaction();

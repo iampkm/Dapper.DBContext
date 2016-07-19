@@ -48,14 +48,13 @@
     <Compile Include="DapperDBContext.cs" />
     <Compile Include="DBContextFactory.cs" />
     <Compile Include="Dialect\ConnectionFactory.cs" />
-    <Compile Include="Dialect\DapperContext.cs" />
-    <Compile Include="Dialect\DapperUnitOfWork.cs" />
     <Compile Include="Dialect\DataBase.cs" />
+    <Compile Include="Dialect\IConnectionFactory.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
     <Compile Include="Dialect\Operator.cs" />
     <Compile Include="Dialect\QueryArgument.cs" />
-    <Compile Include="Dialect\QueryService.cs" />
+    <Compile Include="QueryService.cs" />
     <Compile Include="Dialect\SqlBuilder.cs" />
     <Compile Include="Helper\LamdaHelper.cs" />
     <Compile Include="Helper\ReflectionHelper.cs" />

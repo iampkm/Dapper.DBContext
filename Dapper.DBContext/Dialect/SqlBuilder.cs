@@ -18,15 +18,6 @@ namespace Dapper.DBContext.Dialect
         string _encapsulation;
         string _identitySql;
         string _getPagedSql;
-
-        public string KeyName
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public SqlBuilder()
         {          
             SetDataBase();
@@ -117,10 +108,18 @@ namespace Dapper.DBContext.Dialect
 
         public string BuildSelect<TEntity>() where TEntity : IEntity
         {
+            return BuildSelect<TEntity>("");
+        }
+
+        public string BuildSelect<TEntity>(string columns) where TEntity : IEntity
+        {
             var modelType = typeof(TEntity);
             string table = GetTable(modelType);
-            var properties = ReflectionHelper.GetBuildSqlProperties(modelType);
-            var columns = string.Join(",", properties.Select(p => string.Format(_encapsulation, p)));
+            var properties = ReflectionHelper.GetSelectSqlProperties(modelType);
+            if (string.IsNullOrEmpty(columns))
+            {
+                columns = string.Join(",", properties.Select(p => string.Format(_encapsulation, p)));
+            }          
             return string.Format("select {0} from {1} ", columns, table);
         }
         public string GetKeyName(Type modelType, bool isWarpDialect)

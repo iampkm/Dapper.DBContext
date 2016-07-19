@@ -7,22 +7,23 @@ using System.Threading.Tasks;
 
 namespace Dapper.DBContext.Dialect
 {
-  public interface ISqlBuilder
+    public interface ISqlBuilder
     {
-      string BuildInsert(Type modelType);
-      string BuildUpdate(Type modelType);
-      string BuildDelete(Type modelType);
+        string BuildInsert(Type modelType);
+        string BuildUpdate(Type modelType);
+        string BuildDelete(Type modelType);
 
-      string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity;
+        string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity;
 
         string BuildSelect<TEntity>() where TEntity : IEntity;
+        string BuildSelect<TEntity>(string columns) where TEntity : IEntity;
 
         /// <summary>
-        /// 获取ｋｅｙ　名
+        /// 获取key名
         /// </summary>
         /// <param name="modelType"></param>
         /// <param name="isWarpDialect">是否包裹方言</param>
         /// <returns></returns>
-        string GetKeyName(Type modelType,bool isWarpDialect);
+        string GetKeyName(Type modelType, bool isWarpDialect);
     }
 }

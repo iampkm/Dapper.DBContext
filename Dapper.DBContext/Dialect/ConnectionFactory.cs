@@ -9,30 +9,45 @@ using System.Data.SqlClient;
 using MySql.Data.MySqlClient;
 namespace Dapper.DBContext.Dialect
 {
-   public class ConnectionFactory
+   public class ConnectionFactory :IConnectionFactory
     {
-       static IDbConnection _connection;
-      
-        public static IDbConnection CreateConnection(string connectionStringName)
+        IDbConnection _connection;
+        DataBaseEnum _databaseType;
+        string _connectionStringName;
+
+        public ConnectionFactory(string connectionStringName)
         {
-            string connectionString = ConfigurationManager.ConnectionStrings[connectionStringName].ConnectionString;
-            string provider = ConfigurationManager.ConnectionStrings[connectionStringName].ProviderName;
+            this._connectionStringName = connectionStringName;
+        }       
+
+        public IDbConnection Create()
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
+            string provider = ConfigurationManager.ConnectionStrings[_connectionStringName].ProviderName;
             if (_connection == null)
             {
                 switch (provider)
                 {
                     case "System.Data.SqlClient":
-                        _connection = new SqlConnection(connectionString);
+                        this._connection = new SqlConnection(connectionString);
+                        this._databaseType = DataBaseEnum.SqlServer;
                         break;
-                    case "MySql.Data.MySqlClient ":
+                    case "MySql.Data.MySqlClient":
                         _connection = new MySqlConnection(connectionString);
+                        this._databaseType = DataBaseEnum.MySql;
                         break;
                     default:
                         _connection = new SqlConnection(connectionString);
+                        this._databaseType = DataBaseEnum.SqlServer;
                         break;
                 }
             }
             return _connection;          
+        }
+
+        public ISqlBuilder Builder
+        {
+            get { return new SqlBuilder(this._databaseType); }
         }
     }
 }

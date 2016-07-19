@@ -47,5 +47,12 @@ namespace Dapper.DBContext.Test.Dialect
                string expect = "delete from [Order] where [Id]=@Id and [RowVersion]=@RowVersion";
                Assert.AreEqual(expect, target);
            }
+            [TestMethod]
+           public void BuilderSelect_No_Column()
+           {
+               string target = this._builder.BuildSelect<tb_time>();
+               string expect = "select [Code],[City],[Area],[Status],[CreateAt],[CreateBy] from [Order] ";
+               Assert.AreEqual(expect, target);
+           }
     }
 }
