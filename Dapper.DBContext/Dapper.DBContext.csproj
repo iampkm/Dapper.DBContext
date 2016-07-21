@@ -50,7 +50,9 @@
     <Compile Include="Dialect\ConnectionFactory.cs" />
     <Compile Include="Dialect\DataBase.cs" />
     <Compile Include="Dialect\IConnectionFactory.cs" />
+    <Compile Include="Dialect\IJoinQuery.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
+    <Compile Include="Dialect\JoinQuery.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
     <Compile Include="Dialect\Operator.cs" />
     <Compile Include="Dialect\QueryArgument.cs" />

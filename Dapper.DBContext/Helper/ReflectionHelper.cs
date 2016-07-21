@@ -59,40 +59,15 @@ namespace Dapper.DBContext.Helper
             var properties = new List<string>();
             foreach (PropertyInfo pi in propertieInfos)
             {
-                var attrs = pi.GetCustomAttributes(false);
-                if (attrs != null || attrs.Length != 0)
-                {
-                    bool isSkip = false;
-                    foreach (var attr in attrs)
-                    {
-                        if (attr is NotMappedAttribute)
-                        {
-                            isSkip = true;
-                            break;
-                        }
-                        else if (attr is KeyAttribute && pi.PropertyType == typeof(int))  //标记了key 属性，且为int 型 就默认为自增长字段
-                        {
-                            isSkip = true;
-                            break;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    if (isSkip) { continue; }
-                };
-                if (pi.Name == _defaultRowVersion && pi.PropertyType == typeof(byte[])) { continue; } // 行版本排除
-                // get rid of identity key
-                if (pi.Name == _defaultKey && pi.PropertyType == typeof(int)) // 属性名为约定的 值，且为int 型 就默认为自增长字段 
-                {
-                    continue; //自增跳过
-                }
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass)
-                {
-                    continue;  // 泛型集合跳过
-                }
-                // value object
+                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
+                if (attrs != null) { continue; }
+                //get rid of rowVersion
+                if (pi.Name == _defaultRowVersion && pi.PropertyType == typeof(byte[])) { continue; } 
+                // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
+                if (pi.Name == _defaultKey && pi.PropertyType == typeof(int)) { continue; }  
+                // get rid of the aggragation collection object 
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; }               
+                // find value object
                 if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
                 {
                     properties.AddRange(GetBuildSqlProperties(pi.PropertyType));
@@ -109,31 +84,13 @@ namespace Dapper.DBContext.Helper
             var properties = new List<string>();
             foreach (PropertyInfo pi in propertieInfos)
             {
-                var attrs = pi.GetCustomAttributes(false);
-                if (attrs != null || attrs.Length != 0)
-                {
-                    bool isSkip = false;
-                    foreach (var attr in attrs)
-                    {
-                        if (attr is NotMappedAttribute)
-                        {
-                            isSkip = true;
-                            break;
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                    }
-                    if (isSkip) { continue; }
-                };
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass)
-                {
-                    continue;  // 泛型集合跳过
-                }
-               
+                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name);
+                if (attrs != null) { continue; }
+                // get rid of the aggragation collection object 
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; } 
+              
                 // value object
-                if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
+                if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string) && pi.PropertyType != typeof(byte[]))
                 {
                     properties.AddRange(GetSelectSqlProperties(pi.PropertyType));
                     continue;

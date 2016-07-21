@@ -24,6 +24,10 @@ namespace Dapper.DBContext
             this._connection = connectionFactory.Create();
             this._builder = builder;
         }
+        /// <summary>
+        /// Dapper Connection. When you use it ,please first open it. When you finish, close it.
+        /// </summary>
+        protected IDbConnection DBConnection { get { return _connection; } }
 
         public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
         {

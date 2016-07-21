@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper.DBContext;
+using Dapper.DBContext.Schema;
 namespace Dapper.DBContext.Test.Domain
 {
    public class Order :BaseEntity<int>
@@ -64,4 +65,40 @@ namespace Dapper.DBContext.Test.Domain
        public string Code { get; private set; }
 
    }
+   
+    [Table("o2o_customer")]
+   public class CustomerEntity : IEntity
+   {
+       public CustomerEntity() { }
+
+       public CustomerEntity(string id,DateTime createOn)
+       {
+           this.CustomerID = id;
+           this.CreateOn = createOn;
+       }
+       [Key]
+       public string CustomerID { get; private set; }
+
+       public DateTime CreateOn { get; private set; }
+   }
+
+    [Table("o2o_customer")]
+    public class CustomerAutoIDEntity : IEntity
+    {
+        public CustomerAutoIDEntity() { }
+
+        public CustomerAutoIDEntity(int id, DateTime createOn)
+        {
+            this.CustomerID = id;
+            this.CreateOn = createOn;
+        }
+        [Column("cusid")]
+        [Key]
+        public int CustomerID { get; private set; }
+
+        public DateTime CreateOn { get; private set; }
+
+        [NotMapped]
+        public string Code { get; private set; }
+    }
 }

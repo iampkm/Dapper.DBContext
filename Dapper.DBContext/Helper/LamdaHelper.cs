@@ -54,7 +54,7 @@ namespace Dapper.DBContext.Helper
                 int index = 1;
                 while (queryProperties.Exists(n => n.Name.Contains(propertyName)))
                 {
-                    propertyName += string.Format("_{0}", index);
+                    propertyName += string.Format("${0}", index);
                     index += 1;
                 }
                 queryProperties.Add(new QueryArgument(propertyName,propertyValue,opr,link));
@@ -101,11 +101,11 @@ namespace Dapper.DBContext.Helper
 
                case ExpressionType.AndAlso:
                case ExpressionType.And:
-                   return "AND";
+                   return "and";
 
                case ExpressionType.Or:
                case ExpressionType.OrElse:
-                   return "OR";
+                   return "or";
 
                case ExpressionType.Default:
                    return string.Empty;

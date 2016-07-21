@@ -60,6 +60,7 @@
     <Compile Include="Dialect\RowVersionTest.cs" />
     <Compile Include="Dialect\SqlBuilderTest.cs" />
     <Compile Include="Domain\Order.cs" />
+    <Compile Include="Helper\ReflectionHelperTest.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

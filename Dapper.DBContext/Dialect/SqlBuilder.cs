@@ -50,10 +50,7 @@ namespace Dapper.DBContext.Dialect
             {
                 return _SqlCache[sqlKey];
             }
-
             string table = GetTable(modelType);
-            //var updatePropertyInfos = GetPropertyInfos(obj);
-            //var updateProperties = updatePropertyInfos.Where(p => p.Name != this._defaultKey && IsSimpleType(p.PropertyType)).Select(p => p.Name);
             var updateProperties = ReflectionHelper.GetBuildSqlProperties(modelType);
             var updateFields = string.Join(",", updateProperties.Select(p => string.Format(_encapsulation, p) + " = @" + p));
             var whereFields = string.Empty;
@@ -95,15 +92,20 @@ namespace Dapper.DBContext.Dialect
             sql.Append("where ");
             foreach (QueryArgument argument in queryArgments)
             {
-                ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
-              
-                 sql.AppendFormat("{0} {2} @{3} {4}", getColumn(argument.Name), argument.Operator, argument.Name, argument.Link);
-               
-
+                var columnName = argument.Name;
+                var argumentName = argument.Name;
+                if (argument.Name.Contains("$"))
+                {
+                    // eg: Id$1  // get rid of $   column name is Id ,argument name is Id1 
+                    columnName = columnName.Substring(0, columnName.LastIndexOf("$"));
+                    argumentName = argument.Name.Replace("$", "");
+                }
+                ((IDictionary<string, object>)args)[argumentName] = argument.Value;
+                sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(columnName), argument.Operator, argumentName, argument.Link); 
             }
             arguments =args;
 
-            return sql.ToString() ;
+            return sql.ToString().Trim() ;
         }
 
         public string BuildSelect<TEntity>() where TEntity : IEntity
