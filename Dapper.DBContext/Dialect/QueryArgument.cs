@@ -8,14 +8,19 @@ namespace Dapper.DBContext.Dialect
 {
    public class QueryArgument
     {
-        public QueryArgument(string name, object value, string operate, string link)
+        public QueryArgument(Type entityType, string name,string argumentName, object value, string operate, string link)
         {
+            this.EntityType = entityType;
             this.Name = name;
             this.Value = value;
             this.Operator = operate;
             this.Link = link;
+            this.ArgumentName = argumentName;
         }
+        public Type EntityType { get; private set; }
          public string Name { get; private set; }
+
+         public string ArgumentName { get; private set; }
 
          public object Value { get; private set; }
 

@@ -1,5 +1,4 @@
-﻿using MySql.Data.MySqlClient;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
@@ -9,30 +8,30 @@ using System.Threading.Tasks;
 
 namespace Dapper.DBContext.Dialect
 {
-    public abstract class IConnectionFactory
+   public abstract class IConnectionFactory
     {
-        public static IConnectionFactory Create(string connectionStringName)
+
+       public static IDbConnection Create(string connectionStringName)
         {
             string provider = ConfigurationManager.ConnectionStrings[connectionStringName].ProviderName;
             if (string.IsNullOrEmpty(provider)) { throw new Exception("ProviderName is empty"); }
-            IConnectionFactory factory = null;
             switch (provider)
             {
                 case "System.Data.SqlClient":
-                    factory =new SqlServerFactory(connectionStringName);
+                    return CreateConnection(connectionStringName);
                     break;
                 case "MySql.Data.MySqlClient":
-                    factory = new MySqlFactory(connectionStringName);
+                    return CreateConnection(connectionStringName);
                     break;
                 default:
-                    factory = new SqlServerFactory(connectionStringName);
+                    return CreateConnection(connectionStringName);
                     break;
-            }
-            return factory;
+            }           
         }
-        public abstract IDbConnection CreateConnection();
-        public abstract ISqlBuilder CreateBuilder();
 
-        public abstract IJoinQuery CreateJoinBuilder();
+       public static abstract IDbConnection CreateConnection(string connectionStringName);
+      public static  ISqlBuilder Builder { get; }
+
+      public static IJoinQuery JoinBuilder { get; }
     }
 }

@@ -15,14 +15,14 @@ namespace Dapper.DBContext
         IConnectionFactory _connectionFactory;
         public QueryService(string connectionStringName)
         {
-            this._connectionFactory = new ConnectionFactory(connectionStringName);
-            this._connection = this._connectionFactory.Create();
-            this._builder = this._connectionFactory.Builder; ;
+            this._connectionFactory = IConnectionFactory.Create(connectionStringName);
+            this._connection = this._connectionFactory.CreateConnection();
+            this._builder = this._connectionFactory.CreateBuilder();
         }
-        public QueryService(IConnectionFactory connectionFactory, ISqlBuilder builder)
+        public QueryService(IConnectionFactory connectionFactory)
         {
-            this._connection = connectionFactory.Create();
-            this._builder = builder;
+            this._connection = connectionFactory.CreateConnection();
+            this._builder = this._connectionFactory.CreateBuilder();
         }
         /// <summary>
         /// Dapper Connection. When you use it ,please first open it. When you finish, close it.
@@ -103,6 +103,29 @@ namespace Dapper.DBContext
             var result = this._connection.Query<TEntity>(sql, args);
             this._connection.Close();
             return result;
+        }
+
+
+        public IJoinQuery FindJoin<TEntity>() where TEntity : IEntity
+        {
+           // var joinQuery = this._connectionFactory.CreateJoinBuilder();
+          
+            this._builder.BuildJoin<TEntity>();            
+            return this._builder as IJoinQuery;
+            
+        }
+
+        private IEnumerable<TResult> Query<TResult>(string sql, object args)
+        {
+            this._connection.Open();
+            var result = this._connection.Query<TResult>(sql, args);
+            this._connection.Close();
+            return result;
+        }
+
+        public IJoinQuery FindPage<TEntity>(int pageIndex , int pageSize ) where TEntity : IEntity
+        {
+            throw new NotImplementedException();
         }
     }
 }

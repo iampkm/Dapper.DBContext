@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-
+using System.Data;
 namespace Dapper.DBContext.Dialect
 {
     public interface ISqlBuilder
@@ -17,13 +17,11 @@ namespace Dapper.DBContext.Dialect
 
         string BuildSelect<TEntity>() where TEntity : IEntity;
         string BuildSelect<TEntity>(string columns) where TEntity : IEntity;
+        
+        string GetKeyName(Type modelType, bool isWrapDialect);
 
-        /// <summary>
-        /// 获取key名
-        /// </summary>
-        /// <param name="modelType"></param>
-        /// <param name="isWarpDialect">是否包裹方言</param>
-        /// <returns></returns>
-        string GetKeyName(Type modelType, bool isWarpDialect);
+        IJoinQuery BuildJoin<TEntity>();
+        IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize);
+
     }
 }
