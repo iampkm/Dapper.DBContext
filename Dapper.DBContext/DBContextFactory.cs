@@ -15,8 +15,8 @@ namespace Dapper.DBContext
         {
             string masterConnectionString = "";
             string readConnectionString = "";
-            IConnectionFactory commandConnection = new ConnectionFactory(masterConnectionString);
-            IConnectionFactory queryConnection = new ConnectionFactory(masterConnectionString);          
+            IConnectionFactory commandConnection = IConnectionFactory.Create(masterConnectionString);
+            IConnectionFactory queryConnection = IConnectionFactory.Create(masterConnectionString);          
             IQuery query = new QueryService(readConnectionString);
             IDBContext db = new DapperDBContext(masterConnectionString,query);
             return db;

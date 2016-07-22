@@ -14,11 +14,17 @@ namespace Dapper.DBContext.Test.Dialect
     public class SqlBuilderTest
     {
         ISqlBuilder _builder;
-
+       // IDataBaseDialect _dialect;
+        IConnectionFactory _connectionFactory;
         [TestInitialize]
         public void Init()
         {
-            this._builder = new SqlBuilder();
+              _connectionFactory = IConnectionFactory.Create("");
+         
+
+            this._builder = this._connectionFactory.CreateBuilder();
+
+           // this._builder = new SqlBuilder(_connectionFactory as IDataBaseDialect);
         }
 
         [TestMethod]

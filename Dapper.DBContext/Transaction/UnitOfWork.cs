@@ -31,7 +31,7 @@ namespace Dapper.DBContext.Transaction
         {
             string executeSql = "";
             int executeResult = 0;
-            using (IDbConnection conn = this._connectionFactory.Create())
+            using (IDbConnection conn = this._connectionFactory.CreateConnection())
             {
                 conn.Open();
                 IDbTransaction tran = conn.BeginTransaction();

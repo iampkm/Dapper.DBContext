@@ -8,6 +8,7 @@ using Dapper.DBContext.Transaction;
 using Dapper.DBContext.Dialect;
 using Dapper.DBContext.Helper;
 using System.Collections;
+using System.Configuration;
 namespace Dapper.DBContext
 {
     /// <summary>
@@ -22,10 +23,11 @@ namespace Dapper.DBContext
 
         public DapperDBContext(string connectionStringName)
         {
-            this._connectionFactory = new ConnectionFactory(connectionStringName);
+            _connectionFactory = IConnectionFactory.Create(connectionStringName);
+         
             this._iquery = new QueryService(connectionStringName);
             this._uow = new UnitOfWork(this._connectionFactory);
-            this._builder = this._connectionFactory.Builder; ;
+            this._builder = this._connectionFactory.CreateBuilder();
         }
 
         public DapperDBContext(string connectionStringName, IQuery iquery):this(connectionStringName)

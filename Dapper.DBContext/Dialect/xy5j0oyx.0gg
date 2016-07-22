@@ -89,9 +89,17 @@ namespace Dapper.DBContext.Dialect
             StringBuilder sql = new StringBuilder();
             sql.Append("where ");
             foreach (QueryArgument argument in queryArgments)
-            {               
-                ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
-                sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
+            {
+                var columnName = argument.Name;
+                var argumentName = argument.Name;
+                if (argument.Name.Contains("$"))
+                {
+                    // eg: Id$1  // get rid of $   column name is Id ,argument name is Id1 
+                    columnName = columnName.Substring(0, columnName.LastIndexOf("$"));
+                    argumentName = argument.Name.Replace("$", "");
+                }
+                ((IDictionary<string, object>)args)[argumentName] = argument.Value;
+                sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(columnName), argument.Operator, argumentName, argument.Link);
             }
             arguments = args;
 
@@ -132,9 +140,9 @@ namespace Dapper.DBContext.Dialect
             var tableAlias = "t";
             string sql = "from {Table} {tableAlias}";
             sql = sql.Replace("{Table}", GetTable(entityType));
-            sql = sql.Replace("{tableAlias}", tableAlias);
+            sql = sql.Replace("{tableAlias}", tableAlias);      
             this._joinContainer.Add(new JoinArgument(entityType, tableAlias, sql));
-            return this;
+            return this; 
         }
         public IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize)
         {
@@ -143,12 +151,12 @@ namespace Dapper.DBContext.Dialect
             // string sql = "{PageSql} from {Table} {tableAlias}";
             //sql = sql.Replace("{Table}", GetTable(entityType));
             //sql = sql.Replace("{tableAlias}", tableAlias);
-            //this._pageSql = this._pageSql.Replace("{TableName}", GetTable(entityType));
-            //_pageSql = _pageSql.Replace("{tableAlias}", tableAlias);
-            //_pageSql = _pageSql.Replace("{PageIndex}", pageIndex.ToString());
-            //_pageSql = _pageSql.Replace("{PageSize}", pageSize.ToString());
-            this._joinContainer.Add(new JoinArgument(entityType, tableAlias, "", pageIndex: pageIndex, pageSize: pageSize, isPageSql: true));
-            return this;
+            this._pageSql = this._pageSql.Replace("{TableName}", GetTable(entityType));
+            _pageSql = _pageSql.Replace("{tableAlias}", tableAlias);
+            _pageSql = _pageSql.Replace("{PageIndex}", pageIndex);
+            _pageSql = _pageSql.Replace("{PageSize}", pageSize);
+           // this._joinContainer.Add(new JoinArgument(entityType, tableAlias, sql));
+            return this; 
         }
 
         #endregion

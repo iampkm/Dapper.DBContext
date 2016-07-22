@@ -47,15 +47,17 @@
   <ItemGroup>
     <Compile Include="DapperDBContext.cs" />
     <Compile Include="DBContextFactory.cs" />
-    <Compile Include="Dialect\ConnectionFactory.cs" />
     <Compile Include="Dialect\DataBase.cs" />
     <Compile Include="Dialect\IConnectionFactory.cs" />
+    <Compile Include="Dialect\IDataBaseDialect.cs" />
     <Compile Include="Dialect\IJoinQuery.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
-    <Compile Include="Dialect\JoinQuery.cs" />
+    <Compile Include="Dialect\JoinArgument.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
+    <Compile Include="Dialect\MySqlFactory.cs" />
     <Compile Include="Dialect\Operator.cs" />
     <Compile Include="Dialect\QueryArgument.cs" />
+    <Compile Include="Dialect\SqlServerFactory.cs" />
     <Compile Include="QueryService.cs" />
     <Compile Include="Dialect\SqlBuilder.cs" />
     <Compile Include="Helper\LamdaHelper.cs" />

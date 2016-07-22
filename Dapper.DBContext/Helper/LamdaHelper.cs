@@ -50,14 +50,20 @@ namespace Dapper.DBContext.Helper
 
                    }
                }
-               // 同一个属性，多次查询时，改变属性变量名
-                int index = 1;
-                while (queryProperties.Exists(n => n.Name.Contains(propertyName)))
+               var entityType = body.Left.Type;
+               if (body.Left.NodeType == ExpressionType.Parameter)
+               {
+                   ParameterExpression paraExp = body.Left as ParameterExpression;
+                   entityType = paraExp.Type;
+               }
+               // 变量参数名          
+                var argumentName = propertyName;
+                if (queryProperties.Exists(n => n.Name.Contains(propertyName)))
                 {
-                    propertyName += string.Format("${0}", index);
-                    index += 1;
+                    argumentName += queryProperties.Count(n => n.Name.Contains(propertyName)).ToString();
                 }
-                queryProperties.Add(new QueryArgument(propertyName,propertyValue,opr,link));
+
+                queryProperties.Add(new QueryArgument(entityType, propertyName, argumentName, propertyValue, opr, link));
 
                 //if (propertyValue is string || propertyValue is DateTime)
                 //{

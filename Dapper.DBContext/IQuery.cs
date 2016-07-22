@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dapper.DBContext.Dialect;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -17,5 +18,19 @@ namespace Dapper.DBContext
         IEnumerable<TEntity> FindAll<TEntity>() where TEntity : IEntity;
         IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity;
         bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity;
+        /// <summary>
+        /// join query
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        IJoinQuery FindJoin<TEntity>() where TEntity : IEntity;
+        /// <summary>
+        ///  find by page
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="pageIndex"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        IJoinQuery FindPage<TEntity>(int pageIndex , int pageSize) where TEntity : IEntity;
     }
 }
