@@ -19,7 +19,7 @@ namespace Dapper.DBContext.Test.Dialect
         [TestInitialize]
         public void Init()
         {
-              _connectionFactory = IConnectionFactory.Create("");
+            _connectionFactory = IConnectionFactory.Create("O2O");
          
 
             this._builder = this._connectionFactory.CreateBuilder();

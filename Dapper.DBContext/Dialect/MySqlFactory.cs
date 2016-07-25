@@ -52,7 +52,8 @@ namespace Dapper.DBContext.Dialect
         {           
             if (_connection == null)
             {
-                this._connection = new MySqlConnection(this._connectionStringName);
+                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
+                _connection = new MySqlConnection(connectionString);
             }
             return this._connection;
         }

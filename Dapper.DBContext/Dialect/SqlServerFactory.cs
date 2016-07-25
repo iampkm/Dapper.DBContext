@@ -21,7 +21,8 @@ namespace Dapper.DBContext.Dialect
         {
             if (_connection == null)
             {
-                _connection=new SqlConnection(_connectionStringName);
+                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
+                _connection = new SqlConnection(connectionString);
             }
             return _connection;
         }
@@ -45,7 +46,9 @@ namespace Dapper.DBContext.Dialect
         {
             get { return "[{0}]"; }
         }
-
+        /// <summary>
+        /// SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS RowIndex, {SelectColumns} FROM {TableName} {TableAlias} {JoinClause} {WhereClause}) AS u WHERE RowIndex BETWEEN (({PageIndex}-1) * {PageSize} + 1) AND ({PageIndex} * {PageSize})
+        /// </summary>
         public string PageFormat
         {
             get { return "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS RowIndex, {SelectColumns} FROM {TableName} {TableAlias} {JoinClause} {WhereClause}) AS u WHERE RowIndex BETWEEN (({PageIndex}-1) * {PageSize} + 1) AND ({PageIndex} * {PageSize})"; }

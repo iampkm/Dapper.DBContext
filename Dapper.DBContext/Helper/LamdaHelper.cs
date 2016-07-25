@@ -21,6 +21,15 @@ namespace Dapper.DBContext.Helper
             return sqls;
        }
 
+       public static List<QueryArgument> GetWhere<T1, T2>(Expression<Func<T1, T2, bool>> where)
+       {
+           var bExpr = GetBinaryExpression(where.Body);
+           List<QueryArgument> sqls = new List<QueryArgument>();
+           GetWhere(bExpr, sqls);
+
+           return sqls; 
+       }
+
        public static void GetWhere(BinaryExpression body,  List<QueryArgument> queryProperties,string link="")
        {
           

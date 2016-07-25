@@ -125,7 +125,8 @@ namespace Dapper.DBContext
 
         public IJoinQuery FindPage<TEntity>(int pageIndex , int pageSize ) where TEntity : IEntity
         {
-            throw new NotImplementedException();
+            this._builder.BuildPage<TEntity>(pageIndex,pageSize);
+            return this._builder as IJoinQuery;
         }
     }
 }

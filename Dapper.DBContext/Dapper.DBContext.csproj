@@ -53,6 +53,7 @@
     <Compile Include="Dialect\IJoinQuery.cs" />
     <Compile Include="Dialect\ISqlBuilder.cs" />
     <Compile Include="Dialect\JoinArgument.cs" />
+    <Compile Include="Dialect\JoinBuilderContext.cs" />
     <Compile Include="Dialect\LamdaDemo.cs" />
     <Compile Include="Dialect\MySqlFactory.cs" />
     <Compile Include="Dialect\Operator.cs" />
