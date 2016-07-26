@@ -41,11 +41,16 @@ namespace Dapper.DBContext.Helper
               
                var propertyValue = GetValue(body.Right);
                var opr = GetSqlOperator(body.NodeType);
-              
 
+               var entityType = body.Left.Type;
                if (body.Left.NodeType == ExpressionType.Call)
                {
                    MethodCallExpression callExp = body.Left as MethodCallExpression;
+
+                   var memberExp = callExp.Arguments.FirstOrDefault(n => n.NodeType == ExpressionType.MemberAccess) as MemberExpression;
+                   ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
+                   entityType = paraExp.Type;
+                  
                    ConstantExpression pvExp = null;
                    switch (callExp.Method.Name)
                    {
@@ -58,11 +63,11 @@ namespace Dapper.DBContext.Helper
                            throw new Exception(string.Format("sql不支持此方法[{0}]", callExp.Method.Name));
 
                    }
-               }
-               var entityType = body.Left.Type;
-               if (body.Left.NodeType == ExpressionType.Parameter)
+               }             
+               if (body.Left.NodeType == ExpressionType.MemberAccess)
                {
-                   ParameterExpression paraExp = body.Left as ParameterExpression;
+                   MemberExpression memberExp = body.Left as MemberExpression;
+                   ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
                    entityType = paraExp.Type;
                }
                // 变量参数名          

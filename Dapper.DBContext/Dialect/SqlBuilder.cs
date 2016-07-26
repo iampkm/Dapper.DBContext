@@ -129,16 +129,8 @@ namespace Dapper.DBContext.Dialect
 
         public IJoinQuery BuildJoin<TEntity>()
         {
-
             this._joinBuilder = new JoinBuilderContext(false);
-
-
-            var entityType = typeof(TEntity);
-            //var tableAlias = "t";
-            //string sql = "from {Table} {tableAlias}";
-            //sql = sql.Replace("{Table}", GetTable(entityType));
-            //sql = sql.Replace("{tableAlias}", tableAlias);
-            //this._joinBuilder.Add(new JoinArgument(entityType, tableAlias, sql));
+            var entityType = typeof(TEntity);          
             this._joinBuilder.Add(entityType);
             return this;
         }
@@ -157,21 +149,21 @@ namespace Dapper.DBContext.Dialect
 
         public IJoinQuery InnerJoin<TEntity>()
         {
-            if (this._joinBuilder == null) { throw new Exception("InnerJoin Can be called after BuildJoin or BuildPage method"); }
+            if (this._joinBuilder == null) { throw new Exception("InnerJoin can be called after BuildJoin or BuildPage method"); }
             this._joinBuilder.Add(typeof(TEntity), "inner join");
             return this;
         }
 
         public IJoinQuery LeftJoin<TEntity>()
         {
-            if (this._joinBuilder == null) { throw new Exception("LeftJoin Can be called after BuildJoin or BuildPage method"); }
+            if (this._joinBuilder == null) { throw new Exception("LeftJoin can be called after BuildJoin or BuildPage method"); }
             this._joinBuilder.Add(typeof(TEntity), "left join");
             return this;
         }
 
         public IJoinQuery RightJoin<TEntity>()
         {
-            if (this._joinBuilder == null) { throw new Exception("RightJoin Can be called after BuildJoin or BuildPage method"); }
+            if (this._joinBuilder == null) { throw new Exception("RightJoin can be called after BuildJoin or BuildPage method"); }
             this._joinBuilder.Add(typeof(TEntity), "right join");
             return this;
         }
@@ -179,6 +171,8 @@ namespace Dapper.DBContext.Dialect
         public IEnumerable<TResult> Where<TEntity, TResult>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression)
         {
             if (this._joinBuilder == null) { throw new Exception("join builder is null"); }
+            Dictionary<Type, string> aliasDic = new Dictionary<Type, string>();
+            Dictionary<Type, List<string>> entityColumnDic = new Dictionary<Type, List<string>>();
             string sqlTemplate = "";
             if (this._joinBuilder.IsPage)
             {
@@ -187,7 +181,7 @@ namespace Dapper.DBContext.Dialect
                 sqlTemplate = sqlTemplate.Replace("{PageIndex}", this._joinBuilder.PageIndex.ToString());
                 sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());
                 // replace table 
-                string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableKey}";
+                string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableForeignKey}";
                 int index = 0;
                 foreach (var entity in this._joinBuilder.JoinTables)
                 {
@@ -195,49 +189,81 @@ namespace Dapper.DBContext.Dialect
                     {
                         // first table  
                         sqlTemplate = sqlTemplate.Replace("{TableName}", GetTable(entity.EntityType));
-                        sqlTemplate = sqlTemplate.Replace("{TableAlias}", GetTable(entity.EntityType));
+                        sqlTemplate = sqlTemplate.Replace("{TableAlias}", entity.Alias);
+                        sqlTemplate = sqlTemplate.Replace("{OrderBy}", GetKeyName(entity.EntityType,true));
                     }
                     else
                     {
                         var preEntity = this._joinBuilder.JoinTables[index - 1];
                         var joinSection = joinFormat.Replace("{JoinMethod}", entity.JoinMethod);
-                        joinSection = joinFormat.Replace("{TableName}", GetTable(entity.EntityType));
-                        joinSection = joinFormat.Replace("{TableAlias}", GetTable(entity.EntityType));
-                        joinSection = joinFormat.Replace("{TableKey}", GetKeyName(entity.EntityType, true));
-                        joinSection = joinFormat.Replace("{PreTableAlias}", GetTable(preEntity.EntityType));
-                        joinSection = joinFormat.Replace("{PreTableKey}", GetKeyName(preEntity.EntityType,true));
+                        joinSection = joinSection.Replace("{TableName}", GetTable(entity.EntityType));
+                        joinSection = joinSection.Replace("{TableAlias}", entity.Alias);
+                        joinSection = joinSection.Replace("{TableForeignKey}", GetForeignKey(preEntity.EntityType, true));
+                        joinSection = joinSection.Replace("{PreTableAlias}", preEntity.Alias);
+                        joinSection = joinSection.Replace("{PreTableKey}", GetKeyName(preEntity.EntityType, true));
                         joinSection += "{JoinClause}";  // 为下一个连接预留占位符
 
                         sqlTemplate = sqlTemplate.Replace("{JoinClause}", joinSection);
-                      
+
                     }
                     index = index + 1;
+                    if (!aliasDic.ContainsKey(entity.EntityType))
+                    {
+                        aliasDic.Add(entity.EntityType, entity.Alias);
+                        entityColumnDic.Add(entity.EntityType, ReflectionHelper.GetPropertyInfos(entity.EntityType).Select(n => n.Name).ToList());
+                    }
                 }
+                sqlTemplate = sqlTemplate.Replace("{JoinClause}", "");
             }
             else
             {
                 //not page
             }
+            // get return column
+            var columnInfos = ReflectionHelper.GetPropertyInfos(typeof(TResult));
+            List<string> selectColumns = new List<string>();
+            foreach (var column in columnInfos)
+            {
+                foreach (var entityType in entityColumnDic.Keys)
+                {
+                    if (entityColumnDic[entityType].Exists(name => name.ToLower() == column.Name.ToLower()))
+                    {
+                        selectColumns.Add(string.Format("{0}.{1}", aliasDic[entityType], getColumn(column.Name)));
+                        break;
+                    }
+                }
+            }
+
+            sqlTemplate = sqlTemplate.Replace("{SelectColumns}", string.Join(",", selectColumns));
+
 
             var queryArgments = LamdaHelper.GetWhere<TEntity>(expression);
             //  Dictionary<string, object> dic = new Dictionary<string, object>();
             dynamic args = new ExpandoObject();
-            StringBuilder sql = new StringBuilder();
-            sql.Append("where ");
+            StringBuilder where = new StringBuilder();
+            where.Append("where ");
             object arguments = new object();
+            string template = "{TableAlias}.{ColumnName} {Operator} @{ArgumentName} {Link}";
             foreach (QueryArgument argument in queryArgments)
             {
                 ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
-                sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
+                string temp = template.Replace("{TableAlias}", aliasDic[argument.EntityType]);
+                temp = temp.Replace("{ColumnName}", getColumn(argument.Name));
+                temp = temp.Replace("{Operator}", argument.Operator);
+                temp = temp.Replace("{ArgumentName}", argument.ArgumentName);
+                temp = temp.Replace("{Link}", argument.Link);
+                where.Append(temp);
             }
             arguments = args;
+
+            sqlTemplate = sqlTemplate.Replace("{WhereClause}", where.ToString());
 
             IEnumerable<TResult> lll = new List<TResult>();
             return lll;
             //connection.Open();
             //var result = connection.Query<TResult>(sql.ToString(), arguments);
             //connection.Close();
-           // return result;
+            // return result;
 
             // return sql.ToString().Trim();
         }
@@ -265,6 +291,16 @@ namespace Dapper.DBContext.Dialect
             return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetTableName(modelType));
         }
 
+        private string GetForeignKey(Type modelType, bool isWrapDialect)
+        {
+            string foreignKey = ReflectionHelper.GetTableName(modelType) + GetKeyName(modelType, false); ;
+            if (isWrapDialect)
+            {
+                foreignKey = string.Format(this._dialect.WrapFormat, foreignKey);
+            }
+            return foreignKey;
+        }
+
         private string GetKey(Type modelType)
         {
             return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetKeyName(modelType));
@@ -275,18 +311,6 @@ namespace Dapper.DBContext.Dialect
             return string.Format(this._dialect.WrapFormat, name);
         }
 
-        //private JoinArgument BuildJoinArgument(Type entityType)
-        //{
-        //    if (_joinContainer.Count == 0) throw new Exception("Join can not be used alone");
-        //    var preEntity = this._joinContainer[_joinContainer.Count - 1];
-        //    var tableAlias = "t" + _joinContainer.Count;
-        //    string sql = _joinFormat.Replace("{Table}", GetTable(entityType));
-        //    sql = _joinFormat.Replace("{tableAlias}", tableAlias);
-        //    sql = _joinFormat.Replace("{PreTableAlias}", preEntity.TableAlias);
-        //    sql = _joinFormat.Replace("{PreTableKey}", GetKeyName(preEntity.EntityType, true));
-        //    sql = _joinFormat.Replace("{TableKey}", GetKeyName(entityType, true));
-        //    return new JoinArgument(entityType, tableAlias, sql);
-        //}
         #endregion
 
 

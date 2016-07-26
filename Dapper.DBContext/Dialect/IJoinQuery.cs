@@ -8,7 +8,9 @@ using System.Data;
 namespace Dapper.DBContext.Dialect
 {
    public interface IJoinQuery
-    {     
+    {
+        IJoinQuery BuildJoin<TEntity>();
+        IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize);
        IJoinQuery InnerJoin<TEntity>();
        IJoinQuery LeftJoin<TEntity>();
        IJoinQuery RightJoin<TEntity>();

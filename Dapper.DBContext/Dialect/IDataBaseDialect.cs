@@ -10,6 +10,9 @@ namespace Dapper.DBContext.Dialect
     {
         DataBaseEnum DataBaseType { get; }
          string WrapFormat { get; }
+        /// <summary>
+        /// 分页格式字符串
+        /// </summary>
          string PageFormat { get; }
          string IdentityFromat { get; }
        

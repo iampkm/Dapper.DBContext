@@ -33,7 +33,7 @@ namespace Dapper.DBContext.Dialect
 
        public void Add(Type entityType,string joinMethod = "")
        {
-            JoinTables.Add(new JoinArgument(entityType,joinMethod));
+            JoinTables.Add(new JoinArgument(entityType,joinMethod,this.JoinTables.Count));
        }
 
        
