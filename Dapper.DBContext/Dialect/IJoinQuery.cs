@@ -9,8 +9,7 @@ namespace Dapper.DBContext.Dialect
 {
    public interface IJoinQuery
     {
-        IJoinQuery BuildJoin<TEntity>();
-        IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize);
+       JoinBuilderContext JoinContext { get; }
        IJoinQuery InnerJoin<TEntity>();
        IJoinQuery LeftJoin<TEntity>();
        IJoinQuery RightJoin<TEntity>();

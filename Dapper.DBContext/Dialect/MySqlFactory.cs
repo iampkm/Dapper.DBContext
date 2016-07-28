@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using System.Data;
 using System.Configuration;
+using Dapper.DBContext.Transaction;
 namespace Dapper.DBContext.Dialect
 {
     public class MySqlFactory : IConnectionFactory, IDataBaseDialect
@@ -60,12 +61,12 @@ namespace Dapper.DBContext.Dialect
 
         public override ISqlBuilder CreateBuilder()
         {
-            throw new NotImplementedException();
+            return new SqlBuilder(this);
         }
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            throw new NotImplementedException();
+            return new JoinQueryBuilder(this, new DialectBuilder(this), new ExecuteQuery(this)); 
         }
     }
 }

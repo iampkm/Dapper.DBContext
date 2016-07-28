@@ -20,8 +20,5 @@ namespace Dapper.DBContext.Dialect
         
         string GetKeyName(Type modelType, bool isWrapDialect);
 
-        IJoinQuery BuildJoin<TEntity>();
-        IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize);
-
     }
 }

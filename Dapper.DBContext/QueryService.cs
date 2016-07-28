@@ -14,11 +14,13 @@ namespace Dapper.DBContext
         ISqlBuilder _builder;
         IConnectionFactory _connectionFactory;
         IExecuteQuery _executeQuery;
+        IJoinQuery _joinQuery;
         public QueryService(string connectionStringName)
         {
             this._connectionFactory = IConnectionFactory.Create(connectionStringName);
             this._executeQuery = new ExecuteQuery(this._connectionFactory);
             this._builder = this._connectionFactory.CreateBuilder();
+            this._joinQuery = this._connectionFactory.CreateJoinBuilder();
         }
         public QueryService(IConnectionFactory connectionFactory)
         {
@@ -34,7 +36,7 @@ namespace Dapper.DBContext
         {
             object args = new object();
             string sql = string.Format("{0} {1}", this._builder.BuildSelect<TEntity>("count(*)"), this._builder.BuildWhere<TEntity>(expression, out args));
-            var result= this._executeQuery.ExecuteScalar<int>(sql, args);
+            var result = this._executeQuery.ExecuteScalar<int>(sql, args);
             return result > 0;
         }
 
@@ -92,21 +94,18 @@ namespace Dapper.DBContext
 
 
         public IJoinQuery FindJoin<TEntity>() where TEntity : IEntity
-        {          
-            this._builder.BuildJoin<TEntity>();            
-            return this._builder as IJoinQuery;            
+        {
+            var entityType = typeof(TEntity);
+            this._joinQuery.JoinContext.Add(entityType);
+            return this._joinQuery;
         }
 
-        private IEnumerable<TResult> Query<TResult>(string sql, object args)
+        public IJoinQuery FindPage<TEntity>(int pageIndex, int pageSize) where TEntity : IEntity
         {
-            var result = this._executeQuery.Query<TResult>(sql, args);
-            return result;
-        }
-
-        public IJoinQuery FindPage<TEntity>(int pageIndex , int pageSize ) where TEntity : IEntity
-        {
-            this._builder.BuildPage<TEntity>(pageIndex,pageSize);
-            return this._builder as IJoinQuery;
+            var entityType = typeof(TEntity);
+            this._joinQuery.JoinContext.SetPageInfo(pageIndex, pageSize);
+            this._joinQuery.JoinContext.Add(entityType);
+            return this._joinQuery;
         }
     }
 }

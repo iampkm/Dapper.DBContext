@@ -14,28 +14,19 @@ namespace Dapper.DBContext.Dialect
        IDialectBuilder _dialectBuilder;
        IExecuteQuery _executeQuery;
        JoinBuilderContext _joinBuilder;
+       
         public JoinQueryBuilder(IDataBaseDialect dialect,IDialectBuilder dialectBuilder,IExecuteQuery executeQuery)
         {
             this._dialect = dialect;
             this._dialectBuilder = dialectBuilder;
             this._executeQuery = executeQuery;
-        }
-        public IJoinQuery BuildJoin<TEntity>()
-        {
-            this._joinBuilder = new JoinBuilderContext(false);
-            var entityType = typeof(TEntity);
-            this._joinBuilder.Add(entityType);
-            return this;
-        }
-        public IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize)
-        {
-            this._joinBuilder = new JoinBuilderContext(true);
-            this._joinBuilder.SetPageInfo(pageIndex, pageSize);
-            var entityType = typeof(TEntity);
-            this._joinBuilder.Add(entityType);
-            return this;
+            _joinBuilder = new JoinBuilderContext();
         }
 
+        public JoinBuilderContext JoinContext {
+            get { return this._joinBuilder; }
+        }
+        
         public IJoinQuery InnerJoin<TEntity>()
         {
             if (this._joinBuilder == null) { throw new Exception("InnerJoin can be called after BuildJoin or BuildPage method"); }
@@ -68,46 +59,49 @@ namespace Dapper.DBContext.Dialect
                 // page sql
                 sqlTemplate = this._dialect.PageFormat;
                 sqlTemplate = sqlTemplate.Replace("{PageIndex}", this._joinBuilder.PageIndex.ToString());
-                sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());
-                // replace table 
-                string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableForeignKey}";
-                int index = 0;
-                foreach (var entity in this._joinBuilder.JoinTables)
-                {
-                    if (string.IsNullOrEmpty(entity.JoinMethod) && index == 0)
-                    {
-                        // first table  
-                        sqlTemplate = sqlTemplate.Replace("{TableName}", _dialectBuilder.GetTable(entity.EntityType));
-                        sqlTemplate = sqlTemplate.Replace("{TableAlias}", entity.Alias);
-                        sqlTemplate = sqlTemplate.Replace("{OrderBy}", _dialectBuilder.GetKey(entity.EntityType));
-                    }
-                    else
-                    {
-                        var preEntity = this._joinBuilder.JoinTables[index - 1];
-                        var joinSection = joinFormat.Replace("{JoinMethod}", entity.JoinMethod);
-                        joinSection = joinSection.Replace("{TableName}", _dialectBuilder.GetTable(entity.EntityType));
-                        joinSection = joinSection.Replace("{TableAlias}", entity.Alias);
-                        joinSection = joinSection.Replace("{TableForeignKey}", _dialectBuilder.GetForeignKey(preEntity.EntityType));
-                        joinSection = joinSection.Replace("{PreTableAlias}", preEntity.Alias);
-                        joinSection = joinSection.Replace("{PreTableKey}", _dialectBuilder.GetKey(preEntity.EntityType));
-                        joinSection += "{JoinClause}";  // 为下一个连接预留占位符
-
-                        sqlTemplate = sqlTemplate.Replace("{JoinClause}", joinSection);
-
-                    }
-                    index = index + 1;
-                    if (!aliasDic.ContainsKey(entity.EntityType))
-                    {
-                        aliasDic.Add(entity.EntityType, entity.Alias);
-                        entityColumnDic.Add(entity.EntityType, ReflectionHelper.GetPropertyInfos(entity.EntityType).Select(n => n.Name).ToList());
-                    }
-                }
-                sqlTemplate = sqlTemplate.Replace("{JoinClause}", "");
+                sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());                         
             }
             else
             {
-                //not page
+                sqlTemplate = "select {SelectColumns} from {TableName} {TableAlias} {JoinClause} {WhereClause}";
             }
+            // build join 
+            // replace table 
+            string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableForeignKey}";      
+            int index = 0;
+            foreach (var entity in this._joinBuilder.JoinTables)
+            {
+                if (string.IsNullOrEmpty(entity.JoinMethod) && index == 0)
+                {
+                    // first table  
+                    sqlTemplate = sqlTemplate.Replace("{TableName}", _dialectBuilder.GetTable(entity.EntityType));
+                    sqlTemplate = sqlTemplate.Replace("{TableAlias}", entity.Alias);
+                    sqlTemplate = sqlTemplate.Replace("{OrderBy}", _dialectBuilder.GetKey(entity.EntityType));
+                }
+                else
+                {
+                    var preEntity = this._joinBuilder.JoinTables[index - 1];
+                    var joinSection = joinFormat.Replace("{JoinMethod}", entity.JoinMethod);
+                    joinSection = joinSection.Replace("{TableName}", _dialectBuilder.GetTable(entity.EntityType));
+                    joinSection = joinSection.Replace("{TableAlias}", entity.Alias);
+                    joinSection = joinSection.Replace("{TableForeignKey}", _dialectBuilder.GetForeignKey(preEntity.EntityType));
+                    joinSection = joinSection.Replace("{PreTableAlias}", preEntity.Alias);
+                    joinSection = joinSection.Replace("{PreTableKey}", _dialectBuilder.GetKey(preEntity.EntityType));
+                    joinSection += "{JoinClause}";  // 为下一个连接预留占位符
+
+                    sqlTemplate = sqlTemplate.Replace("{JoinClause}", joinSection);
+
+                }
+                index = index + 1;
+                if (!aliasDic.ContainsKey(entity.EntityType))
+                {
+                    aliasDic.Add(entity.EntityType, entity.Alias);
+                    entityColumnDic.Add(entity.EntityType, ReflectionHelper.GetPropertyInfos(entity.EntityType).Select(n => n.Name).ToList());
+                }
+            }
+            sqlTemplate = sqlTemplate.Replace("{JoinClause}", "");
+
+
             // get return column
             var columnInfos = ReflectionHelper.GetPropertyInfos(typeof(TResult));
             List<string> selectColumns = new List<string>();
@@ -132,7 +126,7 @@ namespace Dapper.DBContext.Dialect
             StringBuilder where = new StringBuilder();
             where.Append("where ");
             object arguments = new object();
-            string template = "{TableAlias}.{ColumnName} {Operator} @{ArgumentName} {Link}";
+            string template = "{TableAlias}.{ColumnName} {Operator} @{ArgumentName} {Link} ";
             foreach (QueryArgument argument in queryArgments)
             {
                 ((IDictionary<string, object>)args)[argument.Name] = argument.Value;

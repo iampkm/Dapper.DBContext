@@ -9,9 +9,9 @@ namespace Dapper.DBContext.Dialect
    public class JoinBuilderContext
     {
 
-       public JoinBuilderContext(bool isPage)
+       public JoinBuilderContext()
        {
-           this.IsPage = isPage;
+           this.IsPage = false;
            this.JoinTables = new List<JoinArgument>();
        }
        /// <summary>
@@ -27,6 +27,7 @@ namespace Dapper.DBContext.Dialect
 
        public void SetPageInfo(int pageIndex, int pageSize)
        {
+           this.IsPage = true;
            this.PageIndex = pageIndex;
            this.PageSize = pageSize;
        }
@@ -35,7 +36,6 @@ namespace Dapper.DBContext.Dialect
        {
             JoinTables.Add(new JoinArgument(entityType,joinMethod,this.JoinTables.Count));
        }
-
        
     }
 }

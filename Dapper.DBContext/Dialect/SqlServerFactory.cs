@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Dapper.DBContext.Transaction;
 namespace Dapper.DBContext.Dialect
 {
    public class SqlServerFactory :IConnectionFactory,IDataBaseDialect
@@ -34,7 +34,7 @@ namespace Dapper.DBContext.Dialect
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            throw new NotImplementedException();
+            return new JoinQueryBuilder(this,new DialectBuilder(this),new ExecuteQuery(this)); 
         }
 
         public DataBaseEnum DataBaseType

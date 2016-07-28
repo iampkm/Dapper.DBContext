@@ -26,7 +26,16 @@ namespace Dapper.DBContext.Test.Dialect
           public void FindPage_test()
           {
               var result = this._query.FindPage<Order>(1, 10).InnerJoin<OrderItem>().Where<Order, OrderItem>(o=>o.Code.Like("12%")&&o.Id == 12);
+            
              Assert.AreEqual(0, result.Any());
+          }
+
+          [TestMethod]
+          public void FindJoin_test()
+          {
+              var result = this._query.FindJoin<Order>().InnerJoin<OrderItem>().Where<Order, OrderItem>(o => o.Code.Like("12%") && o.Id == 12);
+
+              Assert.AreEqual(0, result.Any());
           }
 
 
