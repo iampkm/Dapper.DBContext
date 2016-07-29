@@ -14,5 +14,7 @@ namespace Dapper.DBContext.Dialect
         string GetTable(Type modelType, bool isWrapDialect = true);
 
         string GetColumn(string columnName, bool isWrapDialect = true);
+
+        IDataBaseDialect DBDialect { get; }
     }
 }

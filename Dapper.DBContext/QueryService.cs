@@ -51,14 +51,14 @@ namespace Dapper.DBContext
 
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : IEntity
         {
-            string sql = this._builder.buildSelectById<TEntity>();
+            string sql = this._builder.buildSelectById<TEntity>(true);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }
 
         public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : IEntity
         {
-            string sql = this._builder.buildSelectById<TEntity>();
+            string sql = this._builder.buildSelectById<TEntity>(true);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }

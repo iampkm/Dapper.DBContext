@@ -10,10 +10,19 @@ namespace Dapper.DBContext.Dialect
     public class DialectBuilder : IDialectBuilder
     {
         IDataBaseDialect _dialect;
+
         public DialectBuilder(IDataBaseDialect dialect)
         {
             this._dialect = dialect;
         }
+
+        public IDataBaseDialect DBDialect
+        {
+            get
+            {
+               return this._dialect;
+            }
+        }     
 
         public string GetKey(Type modelType, bool isWrapDialect = true)
         {

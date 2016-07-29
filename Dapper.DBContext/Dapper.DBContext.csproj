@@ -47,7 +47,6 @@
   <ItemGroup>
     <Compile Include="DapperDBContext.cs" />
     <Compile Include="DBContextFactory.cs" />
-    <Compile Include="Dialect\DataBase.cs" />
     <Compile Include="Dialect\DialectBuilder.cs" />
     <Compile Include="Dialect\IConnectionFactory.cs" />
     <Compile Include="Dialect\IDataBaseDialect.cs" />

@@ -10,14 +10,14 @@ namespace Dapper.DBContext.Dialect
 {
    public class JoinQueryBuilder :IJoinQuery
     {
-       IDataBaseDialect _dialect;
+      // IDataBaseDialect _dialect;
        IDialectBuilder _dialectBuilder;
        IExecuteQuery _executeQuery;
        JoinBuilderContext _joinBuilder;
        
-        public JoinQueryBuilder(IDataBaseDialect dialect,IDialectBuilder dialectBuilder,IExecuteQuery executeQuery)
+        public JoinQueryBuilder(IDialectBuilder dialectBuilder,IExecuteQuery executeQuery)
         {
-            this._dialect = dialect;
+           // this._dialect = dialect;
             this._dialectBuilder = dialectBuilder;
             this._executeQuery = executeQuery;
             _joinBuilder = new JoinBuilderContext();
@@ -57,7 +57,7 @@ namespace Dapper.DBContext.Dialect
             if (this._joinBuilder.IsPage)
             {
                 // page sql
-                sqlTemplate = this._dialect.PageFormat;
+                sqlTemplate = this._dialectBuilder.DBDialect.PageFormat;
                 sqlTemplate = sqlTemplate.Replace("{PageIndex}", this._joinBuilder.PageIndex.ToString());
                 sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());                         
             }

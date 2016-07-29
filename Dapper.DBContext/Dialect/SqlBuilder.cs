@@ -15,12 +15,11 @@ namespace Dapper.DBContext.Dialect
     public class SqlBuilder : ISqlBuilder
     {
         private static readonly ConcurrentDictionary<string, string> _SqlCache = new ConcurrentDictionary<string, string>();
-        IDataBaseDialect _dialect;
-        string _pageSql = "";
-        public SqlBuilder(IDataBaseDialect dialect)
+
+        IDialectBuilder _dialectBuilder;
+        public SqlBuilder(IDialectBuilder dialect)
         {
-            this._dialect = dialect;
-            this._pageSql = dialect.PageFormat;
+            this._dialectBuilder = dialect;
         }
         #region ISqlBuilder Implement
         public string BuildInsert(Type modelType)
@@ -30,11 +29,11 @@ namespace Dapper.DBContext.Dialect
             {
                 return _SqlCache[sqlKey];
             }
-            string table = GetTable(modelType);
+            string table = this._dialectBuilder.GetTable(modelType);
             var properties = ReflectionHelper.GetBuildSqlProperties(modelType);
-            var values = string.Join(",", properties.Select(p => "@" + p));
-            var columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
-            var sql = string.Format("insert into {0} ({1}) values ({2}) {3}", table, columns, values, this._dialect.IdentityFromat);
+            var values = string.Join(",", properties.Select(name => "@" + name));
+            var columns = string.Join(",", properties.Select(name => this._dialectBuilder.GetColumn(name)));
+            var sql = string.Format("insert into {0} ({1}) values ({2}) {3}", table, columns, values, this._dialectBuilder.DBDialect.IdentityFromat);
             _SqlCache[sqlKey] = sql;
             return sql;
 
@@ -47,16 +46,16 @@ namespace Dapper.DBContext.Dialect
             {
                 return _SqlCache[sqlKey];
             }
-            string table = GetTable(modelType);
+            string table = this._dialectBuilder.GetTable(modelType);
             var updateProperties = ReflectionHelper.GetBuildSqlProperties(modelType);
-            var updateFields = string.Join(",", updateProperties.Select(p => string.Format(this._dialect.WrapFormat, p) + " = @" + p));
+            var updateFields = string.Join(",", updateProperties.Select(name => this._dialectBuilder.GetColumn(name) + " = @" + name));
             var whereFields = string.Empty;
             var rowVersion = "";
             if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" && p.PropertyType == typeof(byte[])))
             {
                 rowVersion = string.Format("and [RowVersion]=@RowVersion");
             }
-            whereFields = string.Format("where {0}=@{1} {2}", GetKey(modelType), ReflectionHelper.GetKeyName(modelType), rowVersion);
+            whereFields = string.Format("where {0}=@{1} {2}", this._dialectBuilder.GetKey(modelType), this._dialectBuilder.GetKey(modelType, false), rowVersion);
             var sql = string.Format("update {0} set {1} {2}", table, updateFields, whereFields);
             _SqlCache[sqlKey] = sql;
             return sql;
@@ -69,33 +68,61 @@ namespace Dapper.DBContext.Dialect
             {
                 return _SqlCache[sqlKey];
             }
-            string table = GetTable(modelType);
+            string table = this._dialectBuilder.GetTable(modelType);
             var rowVersion = "";
             if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" && p.PropertyType == typeof(byte[])))
             {
                 rowVersion = string.Format("and [RowVersion]=@RowVersion");
             }
-            var sql = string.Format("delete from {0} where {1}=@{2} {3}", table, GetKey(modelType), ReflectionHelper.GetKeyName(modelType), rowVersion);
+            var sql = string.Format("delete from {0} where {1}=@{2} {3}", table, this._dialectBuilder.GetKey(modelType), this._dialectBuilder.GetKey(modelType, false), rowVersion);
             _SqlCache[sqlKey] = sql;
             return sql;
         }
 
-        public string buildSelectById<TEntity>()
+        public string buildSelectById<TEntity>(bool idParameterIsArray = false)
         {
-            string sql = string.Format("select {0} from {1} where {2} = @{3}", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)), GetKeyName(typeof(TEntity), true), GetKeyName(typeof(TEntity), false));
+            var Operation = "=";
+            var sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectById);
+            if (idParameterIsArray)
+            {
+                Operation = "in";
+                sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectByIdArray);
+            }
+
+            if (_SqlCache.ContainsKey(sqlKey))
+            {
+                return _SqlCache[sqlKey];
+            }
+
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            string columnNames = GetColumnNames(typeof(TEntity));
+            string key = this._dialectBuilder.GetKey(typeof(TEntity));
+            string keyParameter = this._dialectBuilder.GetKey(typeof(TEntity), false);
+            string sql = string.Format("select {0} from {1} where {2} {3} @{4}", columnNames, table, key, Operation, keyParameter);
+            _SqlCache[sqlKey] = sql;
             return sql;
         }
 
         public string BuildSelectByLamda<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "")
         {
             string columnNames = string.IsNullOrEmpty(columns) == true ? GetColumnNames(typeof(TEntity)) : columns;
-            string sql = string.Format("select {0} from {1} where {2}", columnNames,GetTable(typeof(TEntity)), BuildWhere<TEntity>(expression, out arguments));
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            string where = BuildWhere<TEntity>(expression, out arguments);
+            string sql = string.Format("select {0} from {1} where {2}", columnNames, table, where);
             return sql;
         }
 
         public string buildSelect<TEntity>()
         {
-            string sql = string.Format("select {0} from {1} ", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)));
+            var sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectAll);
+            if (_SqlCache.ContainsKey(sqlKey))
+            {
+                return _SqlCache[sqlKey];
+            }
+            string columnNames = GetColumnNames(typeof(TEntity));
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            string sql = string.Format("select {0} from {1} ", columnNames, table);
+            _SqlCache[sqlKey] = sql;
             return sql;
         }
 
@@ -107,68 +134,30 @@ namespace Dapper.DBContext.Dialect
             foreach (QueryArgument argument in queryArgments)
             {
                 ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
-                sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
+                sql.AppendFormat("{0} {1} @{2} {3} ", this._dialectBuilder.GetColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
             }
             arguments = args;
 
             return sql.ToString().Trim();
         }
 
- 
+
+
+        #endregion
+
+
+        #region private method
 
         private string GetColumnNames(Type entityType)
         {
-            string columns = "";
-            var properties = ReflectionHelper.GetSelectSqlProperties(entityType);            
-            columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
-            return columns;            
+            var properties = ReflectionHelper.GetSelectSqlProperties(entityType);
+            string columns = string.Join(",", properties.Select(name => this._dialectBuilder.GetColumn(name)));
+            return columns;
         }
-        public string GetKeyName(Type modelType, bool isWrapDialect)
-        {
-            if (isWrapDialect)
-            {
-                return GetKey(modelType);
-            }
-            else
-            {
-                return ReflectionHelper.GetKeyName(modelType);
-            }
-        }
-       
-
-        #endregion
-    
-
-        #region private method
 
         private string GetModelSqlKey(Type modelType, Operator operate)
         {
             return string.Format("{0}.{1}", modelType.Name, operate.ToString());
-        }
-
-        private string GetTable(Type modelType)
-        {
-            return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetTableName(modelType));
-        }
-
-        private string GetForeignKey(Type modelType, bool isWrapDialect)
-        {
-            string foreignKey = ReflectionHelper.GetTableName(modelType) + GetKeyName(modelType, false); ;
-            if (isWrapDialect)
-            {
-                foreignKey = string.Format(this._dialect.WrapFormat, foreignKey);
-            }
-            return foreignKey;
-        }
-
-        private string GetKey(Type modelType)
-        {
-            return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetKeyName(modelType));
-        }
-
-        private string getColumn(string name)
-        {
-            return string.Format(this._dialect.WrapFormat, name);
         }
 
         #endregion

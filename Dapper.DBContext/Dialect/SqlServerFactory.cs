@@ -29,12 +29,12 @@ namespace Dapper.DBContext.Dialect
 
         public override ISqlBuilder CreateBuilder()
         {
-            return new SqlBuilder(this);
+            return new SqlBuilder(new DialectBuilder(this));
         }
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            return new JoinQueryBuilder(this,new DialectBuilder(this),new ExecuteQuery(this)); 
+            return new JoinQueryBuilder(new DialectBuilder(this),new ExecuteQuery(this)); 
         }
 
         public string WrapFormat

@@ -32,16 +32,6 @@ namespace Dapper.DBContext.Dialect
         {
             get { return "SELECT LAST_INSERT_ID()"; }
         }
-              
-        public ISqlBuilder Builder
-        {
-            get { return new SqlBuilder(this); }
-        }
-
-        public IJoinQuery JoinBuilder
-        {
-            get { throw new NotImplementedException(); }
-        }
 
         public override IDbConnection CreateConnection()
         {           
@@ -55,12 +45,12 @@ namespace Dapper.DBContext.Dialect
 
         public override ISqlBuilder CreateBuilder()
         {
-            return new SqlBuilder(this);
+            return new SqlBuilder(new DialectBuilder(this));
         }
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            return new JoinQueryBuilder(this, new DialectBuilder(this), new ExecuteQuery(this)); 
+            return new JoinQueryBuilder( new DialectBuilder(this), new ExecuteQuery(this)); 
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Dapper.DBContext.Dialect
         string BuildInsert(Type modelType);
         string BuildUpdate(Type modelType);
         string BuildDelete(Type modelType);
-        string buildSelectById<TEntity>();
+        string buildSelectById<TEntity>(bool idParameterIsArray = false);
         string buildSelect<TEntity>();
         string BuildSelectByLamda<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "");
 

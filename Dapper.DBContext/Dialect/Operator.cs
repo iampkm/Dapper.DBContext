@@ -8,6 +8,6 @@ namespace Dapper.DBContext.Dialect
 {
     public enum Operator
     {
-          Insert,Update,Delete,Select
+          Insert,Update,Delete,SelectAll,SelectById,SelectByIdArray
     }
 }

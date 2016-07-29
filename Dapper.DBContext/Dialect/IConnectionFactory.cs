@@ -32,7 +32,6 @@ namespace Dapper.DBContext.Dialect
         }
         public abstract IDbConnection CreateConnection();
         public abstract ISqlBuilder CreateBuilder();
-
         public abstract IJoinQuery CreateJoinBuilder();
     }
 }
