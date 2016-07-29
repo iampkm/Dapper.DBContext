@@ -12,16 +12,9 @@ namespace Dapper.DBContext.Dialect
         string BuildInsert(Type modelType);
         string BuildUpdate(Type modelType);
         string BuildDelete(Type modelType);
-
-        string BuildWhere<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity;
-
-        string BuildSelect<TEntity>() where TEntity : IEntity;
-        string BuildSelect<TEntity>(string columns) where TEntity : IEntity;
-        
-        string GetKeyName(Type modelType, bool isWrapDialect);
-
-        IJoinQuery BuildJoin<TEntity>();
-        IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize);
+        string buildSelectById<TEntity>();
+        string buildSelect<TEntity>();
+        string BuildSelectByLamda<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "");
 
     }
 }

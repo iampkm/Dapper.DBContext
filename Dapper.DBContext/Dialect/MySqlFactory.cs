@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using System.Data;
 using System.Configuration;
+using Dapper.DBContext.Transaction;
 namespace Dapper.DBContext.Dialect
 {
     public class MySqlFactory : IConnectionFactory, IDataBaseDialect
@@ -15,13 +16,7 @@ namespace Dapper.DBContext.Dialect
         public MySqlFactory(string connectionStringName)
         {
             this._connectionStringName = connectionStringName;
-        }      
-    
-
-        public DataBaseEnum DataBaseType
-        {
-            get { throw new NotImplementedException(); }
-        }
+        } 
 
         public string WrapFormat
         {
@@ -52,19 +47,20 @@ namespace Dapper.DBContext.Dialect
         {           
             if (_connection == null)
             {
-                this._connection = new MySqlConnection(this._connectionStringName);
+                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
+                _connection = new MySqlConnection(connectionString);
             }
             return this._connection;
         }
 
         public override ISqlBuilder CreateBuilder()
         {
-            throw new NotImplementedException();
+            return new SqlBuilder(this);
         }
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            throw new NotImplementedException();
+            return new JoinQueryBuilder(this, new DialectBuilder(this), new ExecuteQuery(this)); 
         }
     }
 }

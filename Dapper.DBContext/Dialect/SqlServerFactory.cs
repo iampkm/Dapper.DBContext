@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
+using Dapper.DBContext.Transaction;
 namespace Dapper.DBContext.Dialect
 {
    public class SqlServerFactory :IConnectionFactory,IDataBaseDialect
@@ -21,7 +21,8 @@ namespace Dapper.DBContext.Dialect
         {
             if (_connection == null)
             {
-                _connection=new SqlConnection(_connectionStringName);
+                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
+                _connection = new SqlConnection(connectionString);
             }
             return _connection;
         }
@@ -33,22 +34,19 @@ namespace Dapper.DBContext.Dialect
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            throw new NotImplementedException();
-        }
-
-        public DataBaseEnum DataBaseType
-        {
-            get { return DataBaseEnum.SqlServer; }
+            return new JoinQueryBuilder(this,new DialectBuilder(this),new ExecuteQuery(this)); 
         }
 
         public string WrapFormat
         {
             get { return "[{0}]"; }
         }
-
+        /// <summary>
+        /// SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS RowIndex, {SelectColumns} FROM {TableName} {TableAlias} {JoinClause} {WhereClause}) AS u WHERE RowIndex BETWEEN (({PageIndex}-1) * {PageSize} + 1) AND ({PageIndex} * {PageSize})
+        /// </summary>
         public string PageFormat
         {
-            get { return "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS RowIndex, {SelectColumns} FROM {TableName} {TableAlias} {JoinClause} {WhereClause}) AS u WHERE RowIndex BETWEEN (({PageIndex}-1) * {PageSize} + 1) AND ({PageIndex} * {PageSize})"; }
+            get { return "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {TableAlias}.{OrderBy}) AS RowIndex, {SelectColumns} FROM {TableName} {TableAlias} {JoinClause} {WhereClause}) AS u WHERE RowIndex BETWEEN (({PageIndex}-1) * {PageSize} + 1) AND ({PageIndex} * {PageSize})"; }
             //get { return "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS PagedNumber, {SelectColumns} FROM {TableName} {WhereClause}) AS u WHERE PagedNUMBER BETWEEN (({PageNumber}-1) * {RowsPerPage} + 1) AND ({PageNumber} * {RowsPerPage})"; }
         }
 

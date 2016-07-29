@@ -19,7 +19,7 @@ namespace Dapper.DBContext.Test.Dialect
         [TestInitialize]
         public void Init()
         {
-              _connectionFactory = IConnectionFactory.Create("");
+            _connectionFactory = IConnectionFactory.Create("O2O");
          
 
             this._builder = this._connectionFactory.CreateBuilder();
@@ -52,26 +52,26 @@ namespace Dapper.DBContext.Test.Dialect
         [TestMethod]
         public void BuilderSelect_No_Column()
         {
-            string target = this._builder.BuildSelect<tb_time>();
+            string target = this._builder.buildSelect<tb_time>();
 
             string expect = "select [Code],[Id],[RowVersion] from [tb_time] ";
             Assert.AreEqual(expect, target);
         }
 
-        [TestMethod]
-        public void BuilderSelect_Have_Columns()
-        {
-            string target = this._builder.BuildSelect<tb_time>("count(*)");
-            string expect = "select count(*) from [tb_time] ";
-            Assert.AreEqual(expect, target);
-        }
+        //[TestMethod]
+        //public void BuilderSelect_Have_Columns()
+        //{
+        //    string target = this._builder.BuildSelect<tb_time>("count(*)");
+        //    string expect = "select count(*) from [tb_time] ";
+        //    Assert.AreEqual(expect, target);
+        //}
 
         [TestMethod]
         public void BuildWhere_One_Argument_test()
         {
             Expression<Func<tb_time, bool>> where = p => p.Id == 12;
             dynamic args = new ExpandoObject();
-            string target = this._builder.BuildWhere<tb_time>(where, out args);
+            string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
             string expect = "where [Id] = @Id";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
@@ -83,7 +83,7 @@ namespace Dapper.DBContext.Test.Dialect
         {
             Expression<Func<tb_time, bool>> where = p => p.Id == 12 && p.Code == "123";
             dynamic args = new ExpandoObject();
-            string target = this._builder.BuildWhere<tb_time>(where, out args);
+            string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
             string expect = "where [Id] = @Id and [Code] = @Code";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
@@ -96,7 +96,7 @@ namespace Dapper.DBContext.Test.Dialect
         {
             Expression<Func<tb_time, bool>> where = p => p.Id == 12 || p.Code.Like("%123%");
             dynamic args = new ExpandoObject();
-            string target = this._builder.BuildWhere<tb_time>(where, out args);
+            string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
             string expect = "where [Id] = @Id or [Code] Like @Code";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
@@ -109,7 +109,7 @@ namespace Dapper.DBContext.Test.Dialect
         {
             Expression<Func<tb_time, bool>> where = p => p.Id > 12 && p.Id <= 24;
             dynamic args = new ExpandoObject();
-            string target = this._builder.BuildWhere<tb_time>(where, out args);
+            string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
             string expect = "where [Id] > @Id and [Id] <= @Id1";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;

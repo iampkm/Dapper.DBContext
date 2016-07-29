@@ -57,6 +57,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CustomerQueryServiceTest.cs" />
+    <Compile Include="Dialect\JoinBuilderTest.cs" />
     <Compile Include="Dialect\RowVersionTest.cs" />
     <Compile Include="Dialect\SqlBuilderTest.cs" />
     <Compile Include="Domain\Order.cs" />
@@ -69,6 +70,9 @@
       <Project>{225eeafd-8e27-4b12-abc3-52abf1487d2b}</Project>
       <Name>Dapper.DBContext</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

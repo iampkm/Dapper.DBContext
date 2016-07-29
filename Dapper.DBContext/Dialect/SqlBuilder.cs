@@ -8,15 +8,14 @@ using System.Threading.Tasks;
 using Dapper.DBContext.Helper;
 using System.Collections;
 using System.Dynamic;
-
+using System.Data;
+using Dapper;
 namespace Dapper.DBContext.Dialect
 {
-    public class SqlBuilder : ISqlBuilder, IJoinQuery
+    public class SqlBuilder : ISqlBuilder
     {
         private static readonly ConcurrentDictionary<string, string> _SqlCache = new ConcurrentDictionary<string, string>();
         IDataBaseDialect _dialect;
-        IList<JoinArgument> _joinContainer;
-        string _joinFormat = "{Table} {tableAlias} on {PreTableAlias}.{PreTableKey} = {tableAlias}.{TableKey}";
         string _pageSql = "";
         public SqlBuilder(IDataBaseDialect dialect)
         {
@@ -81,15 +80,32 @@ namespace Dapper.DBContext.Dialect
             return sql;
         }
 
-        public string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity
+        public string buildSelectById<TEntity>()
+        {
+            string sql = string.Format("select {0} from {1} where {2} = @{3}", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)), GetKeyName(typeof(TEntity), true), GetKeyName(typeof(TEntity), false));
+            return sql;
+        }
+
+        public string BuildSelectByLamda<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "")
+        {
+            string columnNames = string.IsNullOrEmpty(columns) == true ? GetColumnNames(typeof(TEntity)) : columns;
+            string sql = string.Format("select {0} from {1} where {2}", columnNames,GetTable(typeof(TEntity)), BuildWhere<TEntity>(expression, out arguments));
+            return sql;
+        }
+
+        public string buildSelect<TEntity>()
+        {
+            string sql = string.Format("select {0} from {1} ", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)));
+            return sql;
+        }
+
+        private string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments)
         {
             var queryArgments = LamdaHelper.GetWhere<TEntity>(expression);
-            //  Dictionary<string, object> dic = new Dictionary<string, object>();
             dynamic args = new ExpandoObject();
             StringBuilder sql = new StringBuilder();
-            sql.Append("where ");
             foreach (QueryArgument argument in queryArgments)
-            {               
+            {
                 ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
                 sql.AppendFormat("{0} {1} @{2} {3} ", getColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
             }
@@ -98,21 +114,14 @@ namespace Dapper.DBContext.Dialect
             return sql.ToString().Trim();
         }
 
-        public string BuildSelect<TEntity>() where TEntity : IEntity
-        {
-            return BuildSelect<TEntity>("");
-        }
+ 
 
-        public string BuildSelect<TEntity>(string columns) where TEntity : IEntity
+        private string GetColumnNames(Type entityType)
         {
-            var modelType = typeof(TEntity);
-            string table = GetTable(modelType);
-            var properties = ReflectionHelper.GetSelectSqlProperties(modelType);
-            if (string.IsNullOrEmpty(columns))
-            {
-                columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
-            }
-            return string.Format("select {0} from {1} ", columns, table);
+            string columns = "";
+            var properties = ReflectionHelper.GetSelectSqlProperties(entityType);            
+            columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
+            return columns;            
         }
         public string GetKeyName(Type modelType, bool isWrapDialect)
         {
@@ -125,79 +134,10 @@ namespace Dapper.DBContext.Dialect
                 return ReflectionHelper.GetKeyName(modelType);
             }
         }
-
-        public IJoinQuery BuildJoin<TEntity>()
-        {
-            var entityType = typeof(TEntity);
-            var tableAlias = "t";
-            string sql = "from {Table} {tableAlias}";
-            sql = sql.Replace("{Table}", GetTable(entityType));
-            sql = sql.Replace("{tableAlias}", tableAlias);
-            this._joinContainer.Add(new JoinArgument(entityType, tableAlias, sql));
-            return this;
-        }
-        public IJoinQuery BuildPage<TEntity>(int pageIndex, int pageSize)
-        {
-            var entityType = typeof(TEntity);
-            var tableAlias = "t";
-            // string sql = "{PageSql} from {Table} {tableAlias}";
-            //sql = sql.Replace("{Table}", GetTable(entityType));
-            //sql = sql.Replace("{tableAlias}", tableAlias);
-            //this._pageSql = this._pageSql.Replace("{TableName}", GetTable(entityType));
-            //_pageSql = _pageSql.Replace("{tableAlias}", tableAlias);
-            //_pageSql = _pageSql.Replace("{PageIndex}", pageIndex.ToString());
-            //_pageSql = _pageSql.Replace("{PageSize}", pageSize.ToString());
-            this._joinContainer.Add(new JoinArgument(entityType, tableAlias, "", pageIndex: pageIndex, pageSize: pageSize, isPageSql: true));
-            return this;
-        }
+       
 
         #endregion
-
-        #region IJoinQuery Implement
-
-        public IList<JoinArgument> JoinContainer
-        {
-            get { return _joinContainer ?? new List<JoinArgument>(); }
-        }
-        public IJoinQuery InnerJoin<TEntity>()
-        {
-            var argment = BuildJoinArgument(typeof(TEntity));
-            argment.Sql = "inner join " + argment.Sql;
-            this._joinContainer.Add(argment);
-            return this;
-        }
-
-        public IJoinQuery LeftJoin<TEntity>()
-        {
-            var argment = BuildJoinArgument(typeof(TEntity));
-            argment.Sql = "left join " + argment.Sql;
-            this._joinContainer.Add(argment);
-            return this;
-        }
-
-        public IJoinQuery RightJoin<TEntity>()
-        {
-            var argment = BuildJoinArgument(typeof(TEntity));
-            argment.Sql = "right join " + argment.Sql;
-            this._joinContainer.Add(argment);
-            return this;
-        }
-
-        public IEnumerator<TResult> Where<TEntity, TResult>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerator<TResult> Where<TEntity1, TEntity2, TResult>(System.Linq.Expressions.Expression<Func<TEntity1, TEntity2, bool>> expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerator<TResult> Where<TEntity1, TEntity2, TEntity3, TResult>(System.Linq.Expressions.Expression<Func<TEntity1, TEntity2, TEntity3, bool>> expression)
-        {
-            throw new NotImplementedException();
-        }
-        #endregion
+    
 
         #region private method
 
@@ -211,6 +151,16 @@ namespace Dapper.DBContext.Dialect
             return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetTableName(modelType));
         }
 
+        private string GetForeignKey(Type modelType, bool isWrapDialect)
+        {
+            string foreignKey = ReflectionHelper.GetTableName(modelType) + GetKeyName(modelType, false); ;
+            if (isWrapDialect)
+            {
+                foreignKey = string.Format(this._dialect.WrapFormat, foreignKey);
+            }
+            return foreignKey;
+        }
+
         private string GetKey(Type modelType)
         {
             return string.Format(this._dialect.WrapFormat, ReflectionHelper.GetKeyName(modelType));
@@ -221,20 +171,7 @@ namespace Dapper.DBContext.Dialect
             return string.Format(this._dialect.WrapFormat, name);
         }
 
-        private JoinArgument BuildJoinArgument(Type entityType)
-        {
-            if (_joinContainer.Count == 0) throw new Exception("Join can not be used alone");
-            var preEntity = this._joinContainer[_joinContainer.Count - 1];
-            var tableAlias = "t" + _joinContainer.Count;
-            string sql = _joinFormat.Replace("{Table}", GetTable(entityType));
-            sql = _joinFormat.Replace("{tableAlias}", tableAlias);
-            sql = _joinFormat.Replace("{PreTableAlias}", preEntity.TableAlias);
-            sql = _joinFormat.Replace("{PreTableKey}", GetKeyName(preEntity.EntityType, true));
-            sql = _joinFormat.Replace("{TableKey}", GetKeyName(entityType, true));
-            return new JoinArgument(entityType, tableAlias, sql);
-        }
         #endregion
-
 
 
     }

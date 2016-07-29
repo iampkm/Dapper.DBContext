@@ -9,43 +9,23 @@ namespace Dapper.DBContext.Dialect
 
     public class JoinArgument
     {
-        public JoinArgument(Type modelType, string tableAlias, string sql, object value = null, bool isWhere = false, int pageIndex = 0, int pageSize = 0,bool isPageSql = false)
+        public JoinArgument(Type modelType,string joinMethod,int aliasIndex)
         {
             this.EntityType = modelType;
-            this.TableAlias = tableAlias;
-            this.value = value;
-            this.IsWhere = isWhere;
-            this.Sql = sql;
-            this.PageIndex = pageIndex;
-            this.PageSize = pageSize;
-            this.IsPageSql = isPageSql;
+            this.JoinMethod = joinMethod;
+            this.Alias = string.Format("t{0}",aliasIndex);
         }
         public Type EntityType { get; private set; }
-
-        public string TableAlias { get; private set; }
-
-        public string Sql { get; set; }
-
-        public object value { get; private set; }
-
-        public bool IsWhere { get; private set; }
-        public int PageIndex { get; private set; }
-        public int PageSize { get; private set; }
-
-        public bool IsPageSql { get; private set; }
-
         /// <summary>
-        /// execute sql
+        ///  "inner join","left join" ,"right join" ,""
         /// </summary>
-        /// <typeparam name="TResult"></typeparam>
-        /// <param name="callback"></param>
-        public void QueryCallBack<TResult>(Func<string, object, IEnumerable<TResult>> callback)
-        {
-            if (IsWhere)
-            {
-                callback(this.Sql, value);
-            }
-        }
+        public string JoinMethod { get; private set; }
+        /// <summary>
+        ///  entity alias eg: t0,t1,t2,t3
+        /// </summary>
+        public string Alias { get; private set; }
+
+
 
     }
 }
