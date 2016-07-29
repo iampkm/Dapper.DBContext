@@ -103,15 +103,15 @@ namespace Dapper.DBContext.Dialect
 
 
             // get return column
-            var columnInfos = ReflectionHelper.GetPropertyInfos(typeof(TResult));
+            var columnInfos = ReflectionHelper.GetSelectSqlProperties(typeof(TResult));
             List<string> selectColumns = new List<string>();
-            foreach (var column in columnInfos)
+            foreach (var columnName in columnInfos)
             {
                 foreach (var entityType in entityColumnDic.Keys)
                 {
-                    if (entityColumnDic[entityType].Exists(name => name.ToLower() == column.Name.ToLower()))
+                    if (entityColumnDic[entityType].Exists(name => name.ToLower() == columnName.ToLower()))
                     {
-                        selectColumns.Add(string.Format("{0}.{1}", aliasDic[entityType], _dialectBuilder.GetColumn(column.Name)));
+                        selectColumns.Add(string.Format("{0}.{1}", aliasDic[entityType], _dialectBuilder.GetColumn(columnName)));
                         break;
                     }
                 }

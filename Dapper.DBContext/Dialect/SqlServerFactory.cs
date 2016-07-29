@@ -37,11 +37,6 @@ namespace Dapper.DBContext.Dialect
             return new JoinQueryBuilder(this,new DialectBuilder(this),new ExecuteQuery(this)); 
         }
 
-        public DataBaseEnum DataBaseType
-        {
-            get { return DataBaseEnum.SqlServer; }
-        }
-
         public string WrapFormat
         {
             get { return "[{0}]"; }

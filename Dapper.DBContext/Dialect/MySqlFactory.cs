@@ -16,13 +16,7 @@ namespace Dapper.DBContext.Dialect
         public MySqlFactory(string connectionStringName)
         {
             this._connectionStringName = connectionStringName;
-        }      
-    
-
-        public DataBaseEnum DataBaseType
-        {
-            get { throw new NotImplementedException(); }
-        }
+        } 
 
         public string WrapFormat
         {

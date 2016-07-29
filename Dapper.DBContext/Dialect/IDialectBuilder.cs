@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Dapper.DBContext.Dialect
 {
     public interface IDialectBuilder
-    {
+    {       
         string GetKey(Type modelType, bool isWrapDialect = true);
 
         string GetForeignKey(Type modelType, bool isWrapDialect = true);

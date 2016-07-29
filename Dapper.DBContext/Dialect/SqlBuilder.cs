@@ -80,13 +80,30 @@ namespace Dapper.DBContext.Dialect
             return sql;
         }
 
-        public string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments) where TEntity : IEntity
+        public string buildSelectById<TEntity>()
+        {
+            string sql = string.Format("select {0} from {1} where {2} = @{3}", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)), GetKeyName(typeof(TEntity), true), GetKeyName(typeof(TEntity), false));
+            return sql;
+        }
+
+        public string BuildSelectByLamda<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "")
+        {
+            string columnNames = string.IsNullOrEmpty(columns) == true ? GetColumnNames(typeof(TEntity)) : columns;
+            string sql = string.Format("select {0} from {1} where {2}", columnNames,GetTable(typeof(TEntity)), BuildWhere<TEntity>(expression, out arguments));
+            return sql;
+        }
+
+        public string buildSelect<TEntity>()
+        {
+            string sql = string.Format("select {0} from {1} ", GetColumnNames(typeof(TEntity)), GetTable(typeof(TEntity)));
+            return sql;
+        }
+
+        private string BuildWhere<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression, out object arguments)
         {
             var queryArgments = LamdaHelper.GetWhere<TEntity>(expression);
-            //  Dictionary<string, object> dic = new Dictionary<string, object>();
             dynamic args = new ExpandoObject();
             StringBuilder sql = new StringBuilder();
-            sql.Append("where ");
             foreach (QueryArgument argument in queryArgments)
             {
                 ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
@@ -97,21 +114,14 @@ namespace Dapper.DBContext.Dialect
             return sql.ToString().Trim();
         }
 
-        public string BuildSelect<TEntity>() where TEntity : IEntity
-        {
-            return BuildSelect<TEntity>("");
-        }
+ 
 
-        public string BuildSelect<TEntity>(string columns) where TEntity : IEntity
+        private string GetColumnNames(Type entityType)
         {
-            var modelType = typeof(TEntity);
-            string table = GetTable(modelType);
-            var properties = ReflectionHelper.GetSelectSqlProperties(modelType);
-            if (string.IsNullOrEmpty(columns))
-            {
-                columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
-            }
-            return string.Format("select {0} from {1} ", columns, table);
+            string columns = "";
+            var properties = ReflectionHelper.GetSelectSqlProperties(entityType);            
+            columns = string.Join(",", properties.Select(p => string.Format(this._dialect.WrapFormat, p)));
+            return columns;            
         }
         public string GetKeyName(Type modelType, bool isWrapDialect)
         {
@@ -162,7 +172,6 @@ namespace Dapper.DBContext.Dialect
         }
 
         #endregion
-
 
 
     }
