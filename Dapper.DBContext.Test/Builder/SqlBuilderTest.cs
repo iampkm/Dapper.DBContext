@@ -74,7 +74,7 @@ namespace Dapper.DBContext.Test.Builder
             Expression<Func<tb_time, bool>> where = p => p.Id == 12;
             dynamic args = new ExpandoObject();
             string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
-            string expect = "where [Id] = @Id";
+            string expect = "select [Code],[Id],[RowVersion] from [tb_time] where [Id] = @Id";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
             Assert.AreEqual(12, (int)dic["Id"]);
@@ -86,7 +86,7 @@ namespace Dapper.DBContext.Test.Builder
             Expression<Func<tb_time, bool>> where = p => p.Id == 12 && p.Code == "123";
             dynamic args = new ExpandoObject();
             string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
-            string expect = "where [Id] = @Id and [Code] = @Code";
+            string expect = "select [Code],[Id],[RowVersion] from [tb_time] where [Id] = @Id and [Code] = @Code";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
             Assert.AreEqual(12, (int)dic["Id"]);
@@ -99,7 +99,7 @@ namespace Dapper.DBContext.Test.Builder
             Expression<Func<tb_time, bool>> where = p => p.Id == 12 || p.Code.Like("%123%");
             dynamic args = new ExpandoObject();
             string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
-            string expect = "where [Id] = @Id or [Code] Like @Code";
+            string expect = "select [Code],[Id],[RowVersion] from [tb_time] where [Id] = @Id or [Code] Like @Code";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
             Assert.AreEqual(12, (int)dic["Id"]);
@@ -112,7 +112,7 @@ namespace Dapper.DBContext.Test.Builder
             Expression<Func<tb_time, bool>> where = p => p.Id > 12 && p.Id <= 24;
             dynamic args = new ExpandoObject();
             string target = this._builder.BuildSelectByLamda<tb_time>(where, out args);
-            string expect = "where [Id] > @Id and [Id] <= @Id1";
+            string expect = "select [Code],[Id],[RowVersion] from [tb_time] where [Id] > @Id and [Id] <= @Id1";
             Assert.AreEqual(expect, target);
             var dic = args as IDictionary<string, object>;
             Assert.AreEqual(12, (int)dic["Id"]);

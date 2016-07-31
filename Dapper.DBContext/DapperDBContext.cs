@@ -34,7 +34,7 @@ namespace Dapper.DBContext
         {
             this._iquery = iquery;          
         }
-        public void Insert<T>(T model) where T : IEntity
+        public void Insert<TEntity>(TEntity model) where TEntity : class
         {
             // 子类的外键名，必须是 父类名+默认ID名；
             string parentIdName = string.Format("{0}{1}", model.GetType().Name, ReflectionHelper.GetKeyName(model.GetType()));
@@ -56,7 +56,7 @@ namespace Dapper.DBContext
             }
         }
 
-        public void Insert<T>(T[] models) where T : IEntity
+        public void Insert<TEntity>(TEntity[] models) where TEntity : class
         {
             if (models.Count() <= 0) throw new Exception("models is empty");
             var model = models[0];
@@ -66,14 +66,14 @@ namespace Dapper.DBContext
             this._uow.Add(sql, model, InsertMethodEnum.Parent, parentIdName);
         }
 
-        public void Update<T>(T model) where T : IEntity
+        public void Update<TEntity>(TEntity model) where TEntity : class
         {
             string sql = this._builder.BuildUpdate(model.GetType());
 
             this._uow.Add(sql, model);
         }
 
-        public void Update<T>(T[] models) where T : IEntity
+        public void Update<TEntity>(TEntity[] models) where TEntity : class
         {
             if (models.Count() <= 0) throw new Exception("models is empty");
             var model = models[0];
@@ -82,14 +82,14 @@ namespace Dapper.DBContext
             this._uow.Add(sql, model);
         }
 
-        public void Delete<T>(T model) where T : IEntity
+        public void Delete<TEntity>(TEntity model) where TEntity : class
         {
             string sql = this._builder.BuildDelete(model.GetType());
 
             this._uow.Add(sql, model);
         }
 
-        public void Delete<T>(T[] models) where T : IEntity
+        public void Delete<TEntity>(TEntity[] models) where TEntity : class
         {
             if (models.Count() <= 0) throw new Exception("models is empty");
             var model = models[0];
@@ -103,7 +103,7 @@ namespace Dapper.DBContext
             this._uow.Commit();
         }
 
-        public IQuery Query
+        public IQuery Table
         {
             get { return this._iquery; }
         }

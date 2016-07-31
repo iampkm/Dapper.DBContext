@@ -13,6 +13,6 @@ namespace Dapper.DBContext.Builder
        IJoinQuery InnerJoin<TEntity>();
        IJoinQuery LeftJoin<TEntity>();
        IJoinQuery RightJoin<TEntity>();
-       IEnumerable<TEntity> Where<TEntity>(Expression<Func<TEntity, bool>> expression);
+       IEnumerable<TResult> Where<TResult>(Expression<Func<TResult, bool>> expression);
     }
 }

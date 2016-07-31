@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using Dapper.DBContext.Data;
 using Dapper.DBContext.Helper;
 using System.Dynamic;
+using System.Linq.Expressions;
+
 namespace Dapper.DBContext.Builder
 {
    public class JoinQueryBuilder :IJoinQuery
@@ -39,6 +41,11 @@ namespace Dapper.DBContext.Builder
             return this;
         }
 
+        public IEnumerable<TResult> Query<TResult>()
+        {
+            throw new NotImplementedException();
+        }
+
         public IJoinQuery RightJoin<TEntity>()
         {
             if (this._joinBuilder == null) { throw new Exception("RightJoin can be called after BuildJoin or BuildPage method"); }
@@ -46,7 +53,14 @@ namespace Dapper.DBContext.Builder
             return this;
         }
 
-        public IEnumerable<TEntity> Where<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression)
+        public IEnumerable<TResult> Where<TResult>(System.Linq.Expressions.Expression<Func<TResult, bool>> expression)
+        {
+            object arguments = new object();
+            string sql = BuildJoinSelect<TResult>(expression,out arguments);           
+            return  _executeQuery.Query<TResult>(sql, arguments);
+        }
+
+        public string BuildJoinSelect<TResult>(System.Linq.Expressions.Expression<Func<TResult, bool>> expression, out object arguments)
         {
             if (this._joinBuilder == null) { throw new Exception("join builder is null"); }
             Dictionary<Type, string> aliasDic = new Dictionary<Type, string>();
@@ -57,7 +71,7 @@ namespace Dapper.DBContext.Builder
                 // page sql
                 sqlTemplate = this._dialectBuilder.DBDialect.PageFormat;
                 sqlTemplate = sqlTemplate.Replace("{PageIndex}", this._joinBuilder.PageIndex.ToString());
-                sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());                         
+                sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());
             }
             else
             {
@@ -65,7 +79,7 @@ namespace Dapper.DBContext.Builder
             }
             // build join 
             // replace table 
-            string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableForeignKey}";      
+            string joinFormat = "{JoinMethod} {TableName} {TableAlias} on {PreTableAlias}.{PreTableKey} = {TableAlias}.{TableForeignKey}";
             int index = 0;
             foreach (var entity in this._joinBuilder.JoinTables)
             {
@@ -101,7 +115,7 @@ namespace Dapper.DBContext.Builder
 
 
             // get return column
-            var columnInfos = ReflectionHelper.GetSelectSqlProperties(typeof(TEntity));
+            var columnInfos = ReflectionHelper.GetSelectSqlProperties(typeof(TResult));
             List<string> selectColumns = new List<string>();
             foreach (var columnName in columnInfos)
             {
@@ -115,18 +129,18 @@ namespace Dapper.DBContext.Builder
                         break;
                     }
                 }
-                if (!isColumnExists) { throw new Exception(string.Format("column [{0}] is not exist.",columnName)); }
+                if (!isColumnExists) { throw new Exception(string.Format("The column [{0}] does not exist.", columnName)); }
             }
 
             sqlTemplate = sqlTemplate.Replace("{SelectColumns}", string.Join(",", selectColumns));
 
 
-            var queryArgments = LamdaHelper.GetWhere<TEntity>(expression);
+            var queryArgments = LamdaHelper.GetWhere<TResult>(expression);
             //  Dictionary<string, object> dic = new Dictionary<string, object>();
             dynamic args = new ExpandoObject();
             StringBuilder where = new StringBuilder();
             where.Append("where ");
-            object arguments = new object();
+           // object arguments = new object();
             string template = "{TableAlias}.{ColumnName} {Operator} @{ArgumentName} {Link} ";
             foreach (QueryArgument argument in queryArgments)
             {
@@ -141,9 +155,7 @@ namespace Dapper.DBContext.Builder
             arguments = args;
 
             sqlTemplate = sqlTemplate.Replace("{WhereClause}", where.ToString());
-           
-            return  _executeQuery.Query<TEntity>(sqlTemplate,arguments);
+            return sqlTemplate;
         }
-      
     }
 }

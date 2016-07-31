@@ -8,13 +8,13 @@ namespace Dapper.DBContext
 {
    public interface IDBContext
     {
-        void Insert<T>(T model) where T : IEntity;
-        void Insert<T>(T[] models) where T : IEntity;
-        void Update<T>(T model) where T : IEntity;
-        void Update<T>(T[] models) where T : IEntity;
-        void Delete<T>(T model) where T : IEntity;
-        void Delete<T>(T[] models) where T : IEntity;
+        void Insert<TEntity>(TEntity model) where TEntity : class;
+        void Insert<TEntity>(TEntity[] models) where TEntity : class;
+        void Update<TEntity>(TEntity model) where TEntity : class;
+        void Update<TEntity>(TEntity[] models) where TEntity : class;
+        void Delete<TEntity>(TEntity model) where TEntity : class;
+        void Delete<TEntity>(TEntity[] models) where TEntity : class;
         void SaveChange();
-        IQuery Query { get; }       
+        IQuery Table { get; }       
     }
 }

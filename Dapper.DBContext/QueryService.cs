@@ -31,8 +31,12 @@ namespace Dapper.DBContext
         /// Dapper Connection. When you use it ,please first open it. When you finish, close it.
         /// </summary>
         protected IDbConnection DBConnection { get { return this._connectionFactory.CreateConnection(); } }
+        /// <summary>
+        /// Common Query method
+        /// </summary>
+        protected IExecuteQuery Select { get { return new ExecuteQuery(this._connectionFactory); } }
 
-        public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
+        public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             object args = new object();
             string sql = this._builder.BuildSelectByLamda<TEntity>(expression,out args, "count(*)");
@@ -40,7 +44,7 @@ namespace Dapper.DBContext
             return result > 0;
         }
 
-        public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
+        public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             object args = new object();
             string sql =this._builder.BuildSelectByLamda(expression, out args);
@@ -49,42 +53,42 @@ namespace Dapper.DBContext
 
         }
 
-        public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : IEntity
+        public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }
 
-        public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : IEntity
+        public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }
 
-        public TEntity Find<TEntity>(string Id) where TEntity : IEntity
+        public TEntity Find<TEntity>(string Id) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>();
             var result = this._executeQuery.QuerySingle<TEntity>(sql, Id);
             return result;
         }
 
-        public TEntity Find<TEntity>(int Id) where TEntity : IEntity
+        public TEntity Find<TEntity>(int Id) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>();
             var result = this._executeQuery.QuerySingle<TEntity>(sql, Id);
             return result;
         }
 
-        public IEnumerable<TEntity> FindAll<TEntity>() where TEntity : IEntity
+        public IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class
         {
             string sql = this._builder.buildSelect<TEntity>();
             var result = this._executeQuery.Query<TEntity>(sql, null);
             return result;
         }
 
-        public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : IEntity
+        public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             object args = new object();
             string sql = this._builder.BuildSelectByLamda(expression, out args);
@@ -93,14 +97,14 @@ namespace Dapper.DBContext
         }
 
 
-        public IJoinQuery FindJoin<TEntity>() where TEntity : IEntity
+        public IJoinQuery FindJoin<TEntity>() where TEntity : class
         {
             var entityType = typeof(TEntity);
             this._joinQuery.JoinContext.Add(entityType);
             return this._joinQuery;
         }
 
-        public IJoinQuery FindPage<TEntity>(int pageIndex, int pageSize) where TEntity : IEntity
+        public IJoinQuery FindPage<TEntity>(int pageIndex, int pageSize) where TEntity : class
         {
             var entityType = typeof(TEntity);
             this._joinQuery.JoinContext.SetPageInfo(pageIndex, pageSize);
