@@ -5,8 +5,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using System.Data;
-using Dapper.DBContext.Dialect;
-using Dapper.DBContext.Transaction;
+using Dapper.DBContext.Builder;
+using Dapper.DBContext.Data;
 namespace Dapper.DBContext
 {
     public class QueryService : IQuery
@@ -51,14 +51,14 @@ namespace Dapper.DBContext
 
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : IEntity
         {
-            string sql = this._builder.buildSelectById<TEntity>(true);
+            string sql = this._builder.buildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }
 
         public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : IEntity
         {
-            string sql = this._builder.buildSelectById<TEntity>(true);
+            string sql = this._builder.buildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, Ids);
             return result;
         }

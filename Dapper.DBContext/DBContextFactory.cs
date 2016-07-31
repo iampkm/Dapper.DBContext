@@ -5,8 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
-using Dapper.DBContext.Dialect;
-using Dapper.DBContext.Transaction;
+using Dapper.DBContext.Builder;
+using Dapper.DBContext.Data;
 namespace Dapper.DBContext
 {
    public class DBContextFactory

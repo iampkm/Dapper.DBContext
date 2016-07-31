@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dapper.DBContext.Dialect
+namespace Dapper.DBContext.Builder
 {
     public enum Operator
     {

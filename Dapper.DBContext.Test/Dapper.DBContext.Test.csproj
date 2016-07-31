@@ -57,9 +57,9 @@
   </Choose>
   <ItemGroup>
     <Compile Include="CustomerQueryServiceTest.cs" />
-    <Compile Include="Dialect\JoinBuilderTest.cs" />
-    <Compile Include="Dialect\RowVersionTest.cs" />
-    <Compile Include="Dialect\SqlBuilderTest.cs" />
+    <Compile Include="Builder\JoinBuilderTest.cs" />
+    <Compile Include="Builder\RowVersionTest.cs" />
+    <Compile Include="Builder\SqlBuilderTest.cs" />
     <Compile Include="Domain\Order.cs" />
     <Compile Include="Helper\ReflectionHelperTest.cs" />
     <Compile Include="UnitTest1.cs" />

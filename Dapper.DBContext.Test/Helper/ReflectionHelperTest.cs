@@ -1,6 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Dapper.DBContext.Dialect;
+using Dapper.DBContext.Builder;
 using Dapper.DBContext.Schema;
 using Dapper.DBContext.Helper;
 using Dapper.DBContext.Test.Domain;

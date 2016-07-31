@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Dapper.DBContext.Transaction;
-namespace Dapper.DBContext.Dialect
+using Dapper.DBContext.Builder;
+namespace Dapper.DBContext.Data
 {
-   public class SqlServerFactory :IConnectionFactory,IDataBaseDialect
+    public class SqlServerFactory :IConnectionFactory,IDataBaseDialect
     {
         IDbConnection _connection;
         string _connectionStringName;

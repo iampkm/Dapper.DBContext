@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-namespace Dapper.DBContext.Dialect
+using Dapper.DBContext.Data;
+namespace Dapper.DBContext.Builder
 {
     public interface IDialectBuilder
     {       

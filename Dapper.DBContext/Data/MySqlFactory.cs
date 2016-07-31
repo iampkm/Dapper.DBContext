@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using System.Data;
 using System.Configuration;
-using Dapper.DBContext.Transaction;
-namespace Dapper.DBContext.Dialect
+using Dapper.DBContext.Builder;
+namespace Dapper.DBContext.Data
 {
     public class MySqlFactory : IConnectionFactory, IDataBaseDialect
     {
@@ -25,7 +20,7 @@ namespace Dapper.DBContext.Dialect
 
         public string PageFormat
         {
-            get { return "Select {SelectColumns} from {TableName} {WhereClause} Order By {OrderBy} LIMIT (({PageIndex}-1) * {PageSize} + 1),{PageSize}"; }
+            get { return "Select {SelectColumns} from {TableName} {TableAlias} {JoinClause} {WhereClause} Order By  {TableAlias}.{OrderBy} LIMIT (({PageIndex}-1) * {PageSize} + 1),{PageSize}"; }
         }
 
         public string IdentityFromat

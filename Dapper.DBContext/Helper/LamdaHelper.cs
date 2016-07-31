@@ -1,4 +1,4 @@
-﻿using Dapper.DBContext.Dialect;
+﻿using Dapper.DBContext.Builder;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;

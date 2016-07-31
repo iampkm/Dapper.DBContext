@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper.DBContext.Dialect;
+using Dapper.DBContext.Builder;
 using System.Data;
-namespace Dapper.DBContext.Transaction
+namespace Dapper.DBContext.Data
 {
     public class ExecuteQuery : IExecuteQuery
     {

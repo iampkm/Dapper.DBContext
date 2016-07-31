@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Xml;
 using Dapper.DBContext.Test.Domain;
 using Dapper;
-namespace Dapper.DBContext.Test.Dialect
+namespace Dapper.DBContext.Test.Builder
 {
      [TestClass]
    public class RowVersionTest

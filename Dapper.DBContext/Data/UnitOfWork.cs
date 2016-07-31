@@ -4,8 +4,8 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper.DBContext.Dialect;
-namespace Dapper.DBContext.Transaction
+using Dapper.DBContext.Builder;
+namespace Dapper.DBContext.Data
 {
     /// <summary>
     /// 工作单元

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dapper.DBContext.Dialect
+namespace Dapper.DBContext.Builder
 {
-   public class QueryArgument
+    public class QueryArgument
     {
-        public QueryArgument(Type entityType, string name,string argumentName, object value, string operate, string link)
+        public QueryArgument(Type entityType, string name, string argumentName, object value, string operate, string link)
         {
             this.EntityType = entityType;
             this.Name = name;
@@ -18,13 +18,13 @@ namespace Dapper.DBContext.Dialect
             this.ArgumentName = argumentName;
         }
         public Type EntityType { get; private set; }
-         public string Name { get; private set; }
+        public string Name { get; private set; }
 
-         public string ArgumentName { get; private set; }
+        public string ArgumentName { get; private set; }
 
-         public object Value { get; private set; }
+        public object Value { get; private set; }
 
-         public string Operator { get; private set; }
+        public string Operator { get; private set; }
 
         public string Link { get; private set; }
 

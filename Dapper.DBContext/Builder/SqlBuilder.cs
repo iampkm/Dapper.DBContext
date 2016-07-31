@@ -10,7 +10,7 @@ using System.Collections;
 using System.Dynamic;
 using System.Data;
 using Dapper;
-namespace Dapper.DBContext.Dialect
+namespace Dapper.DBContext.Builder
 {
     public class SqlBuilder : ISqlBuilder
     {
@@ -79,14 +79,14 @@ namespace Dapper.DBContext.Dialect
             return sql;
         }
 
-        public string buildSelectById<TEntity>(bool idParameterIsArray = false)
+        public string buildSelectById<TEntity>(bool isOnlyOneId = true)
         {
-            var Operation = "=";
-            var sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectById);
-            if (idParameterIsArray)
+            var Operation = "in";
+            var sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectByIdArray);
+            if (isOnlyOneId)
             {
-                Operation = "in";
-                sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectByIdArray);
+                Operation = "=";
+                sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectById);
             }
 
             if (_SqlCache.ContainsKey(sqlKey))

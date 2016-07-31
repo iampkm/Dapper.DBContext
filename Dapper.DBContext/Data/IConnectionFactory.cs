@@ -1,13 +1,8 @@
-﻿using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Configuration;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dapper.DBContext.Dialect
+using Dapper.DBContext.Builder;
+namespace Dapper.DBContext.Data
 {
     public abstract class IConnectionFactory
     {

@@ -3,21 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Dapper.DBContext.Transaction;
+using Dapper.DBContext.Data;
 using Dapper.DBContext.Helper;
 using System.Dynamic;
-namespace Dapper.DBContext.Dialect
+namespace Dapper.DBContext.Builder
 {
    public class JoinQueryBuilder :IJoinQuery
     {
-      // IDataBaseDialect _dialect;
        IDialectBuilder _dialectBuilder;
        IExecuteQuery _executeQuery;
        JoinBuilderContext _joinBuilder;
        
         public JoinQueryBuilder(IDialectBuilder dialectBuilder,IExecuteQuery executeQuery)
         {
-           // this._dialect = dialect;
             this._dialectBuilder = dialectBuilder;
             this._executeQuery = executeQuery;
             _joinBuilder = new JoinBuilderContext();
@@ -48,7 +46,7 @@ namespace Dapper.DBContext.Dialect
             return this;
         }
 
-        public IEnumerable<TResult> Where<TEntity, TResult>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression)
+        public IEnumerable<TEntity> Where<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression)
         {
             if (this._joinBuilder == null) { throw new Exception("join builder is null"); }
             Dictionary<Type, string> aliasDic = new Dictionary<Type, string>();
@@ -103,18 +101,21 @@ namespace Dapper.DBContext.Dialect
 
 
             // get return column
-            var columnInfos = ReflectionHelper.GetSelectSqlProperties(typeof(TResult));
+            var columnInfos = ReflectionHelper.GetSelectSqlProperties(typeof(TEntity));
             List<string> selectColumns = new List<string>();
             foreach (var columnName in columnInfos)
             {
+                bool isColumnExists = false;
                 foreach (var entityType in entityColumnDic.Keys)
                 {
                     if (entityColumnDic[entityType].Exists(name => name.ToLower() == columnName.ToLower()))
                     {
                         selectColumns.Add(string.Format("{0}.{1}", aliasDic[entityType], _dialectBuilder.GetColumn(columnName)));
+                        isColumnExists = true;
                         break;
                     }
                 }
+                if (!isColumnExists) { throw new Exception(string.Format("column [{0}] is not exist.",columnName)); }
             }
 
             sqlTemplate = sqlTemplate.Replace("{SelectColumns}", string.Join(",", selectColumns));
@@ -140,22 +141,9 @@ namespace Dapper.DBContext.Dialect
             arguments = args;
 
             sqlTemplate = sqlTemplate.Replace("{WhereClause}", where.ToString());
-
-            IEnumerable<TResult> lll = new List<TResult>();
            
-            return  _executeQuery.Query<TResult>(sqlTemplate,arguments);
+            return  _executeQuery.Query<TEntity>(sqlTemplate,arguments);
         }
-
-        public IEnumerable<TResult> Where<TEntity1, TEntity2, TResult>(System.Linq.Expressions.Expression<Func<TEntity1, TEntity2, bool>> expression)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<TResult> Where<TEntity1, TEntity2, TEntity3, TResult>(System.Linq.Expressions.Expression<Func<TEntity1, TEntity2, TEntity3, bool>> expression)
-        {
-            throw new NotImplementedException();
-        }
-
       
     }
 }

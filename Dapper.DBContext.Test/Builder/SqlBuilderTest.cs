@@ -4,11 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Dapper.DBContext.Dialect;
+using Dapper.DBContext.Builder;
 using Dapper.DBContext.Test.Domain;
 using System.Linq.Expressions;
 using System.Dynamic;
-namespace Dapper.DBContext.Test.Dialect
+using Dapper.DBContext.Data;
+
+namespace Dapper.DBContext.Test.Builder
 {
     [TestClass]
     public class SqlBuilderTest
