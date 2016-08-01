@@ -43,6 +43,13 @@ namespace Dapper.DBContext
             var result = this._executeQuery.ExecuteScalar<int>(sql, args);
             return result > 0;
         }
+        public int Count<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
+            var result = this._executeQuery.ExecuteScalar<int>(sql, args);
+            return result ;
+        }
 
         public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {

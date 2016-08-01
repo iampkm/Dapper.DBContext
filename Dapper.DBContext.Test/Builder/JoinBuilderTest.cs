@@ -26,7 +26,6 @@ namespace Dapper.DBContext.Test.Builder
         public void FindPage_test()
         {
             var result = this._query.FindPage<Order>(1, 10).InnerJoin<OrderItem>().Where<Order>(o => o.Code.Like("12%") && o.Id == 12);
-
             Assert.AreEqual(0, result.Any());
         }
 
@@ -37,7 +36,6 @@ namespace Dapper.DBContext.Test.Builder
 
             Assert.AreEqual(0, result.Any());
         }
-
-
+        
     }
 }

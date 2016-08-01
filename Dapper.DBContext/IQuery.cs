@@ -18,6 +18,7 @@ namespace Dapper.DBContext
         IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class;
         IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        int Count<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         /// <summary>
         /// join query
         /// </summary>

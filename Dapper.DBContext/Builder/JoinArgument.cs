@@ -9,7 +9,7 @@ namespace Dapper.DBContext.Builder
 
     public class JoinArgument
     {
-        public JoinArgument(Type modelType,string joinMethod,int aliasIndex)
+        public JoinArgument(Type modelType, string joinMethod, int aliasIndex)
         {
             this.EntityType = modelType;
             this.JoinMethod = joinMethod;

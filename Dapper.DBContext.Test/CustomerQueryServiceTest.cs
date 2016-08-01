@@ -27,6 +27,7 @@ namespace Dapper.DBContext.Test
         public void FindById_Test()
         {
            var model=  _iquery.Find<Order>(1);
+           
            Assert.AreEqual(1, model.Id);
            Assert.AreEqual("123", model.Code);
         }
