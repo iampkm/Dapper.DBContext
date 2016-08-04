@@ -36,6 +36,7 @@ namespace Dapper.DBContext.Builder
         public void Add(Type entityType, string joinMethod = "")
        {
            var args = new JoinArgument(entityType, joinMethod, this.JoinTables.Count);
+           this.JoinTables.Add(args);
        }
 
     }

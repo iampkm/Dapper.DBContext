@@ -49,8 +49,7 @@ namespace Dapper.DBContext.Data
                                     _ParentKeyDic.Add(model.ParentIdName, executeResult);
                                 }
                                 break;
-                            case InsertMethodEnum.Child:
-                                //替换parentid
+                            case InsertMethodEnum.Child:                               
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
                                     executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
@@ -61,18 +60,18 @@ namespace Dapper.DBContext.Data
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
                         }
-                        //  if (executeResult <= 0) { LogWriter.WriteLog("执行结果{0},sql={1};参数{2}", ExceptionHelper.ExceptionLevel.Infomation, executeResult, model.Sql, model.ParamObj.ToString()); }
-
+                        if (executeResult <= 0) { 
+                            throw new Exception(string.Format("rows is zero.sql={0},parameters={1}", model.Sql, model.ParamObj.ToString()));
+                        }
                     }
                     tran.Commit();
                     this._sqlList.Clear();
                 }
                 catch (Exception ex)
-                {
-                    //  LogWriter.WriteLog("sql={0}错误消息：{1},堆栈{2}", ExceptionHelper.ExceptionLevel.Exception, executeSql, ex.Message, ex.StackTrace);
+                {     
                     tran.Rollback();
                     this._sqlList.Clear();
-                    throw new Exception("数据存储异常！");
+                    throw ex;
                 }
                 finally
                 {
