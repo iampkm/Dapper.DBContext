@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 特性集控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("Dapper.DBContext")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A lightweight ORM based on dapper")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Spring.Guo")]
 [assembly: AssemblyProduct("Dapper.DBContext")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright © spring.guo 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
