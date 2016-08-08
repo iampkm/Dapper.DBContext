@@ -32,7 +32,7 @@ namespace Dapper.DBContext
         /// </summary>
         protected IDbConnection DBConnection { get { return this._connectionFactory.CreateConnection(); } }
         /// <summary>
-        /// Common Query method
+        /// Common Query method,execute sql 
         /// </summary>
         protected IExecuteQuery Select { get { return new ExecuteQuery(this._connectionFactory); } }
 
