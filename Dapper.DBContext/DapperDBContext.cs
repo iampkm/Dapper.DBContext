@@ -44,15 +44,22 @@ namespace Dapper.DBContext
 
             // 查找 关联的子类对象
             var childObjects = ReflectionHelper.GetForeignObject(model);
-            //构造子对象sql 
-            foreach (object childObjList in childObjects)
+            //子对象不是 1：1 就是 1：N
+            foreach (object childObjItem in childObjects)
             {
-                foreach (object childObj in childObjList as IEnumerable)
+                if (childObjItem == null) { continue; }
+                var childObjItemType = childObjItem.GetType();
+                var childObj = childObjItem as IEnumerable;               
+                if (childObj != null)
                 {
-                    var childSql = this._builder.BuildInsert(childObj.GetType());
-                    this._uow.Add(childSql, childObjList, InsertMethodEnum.Child, parentIdName);
-                    break;
+                    var childObjList = childObj.GetEnumerator();
+                    if (childObjList.MoveNext())
+                    {
+                        childObjItemType = childObjList.Current.GetType();
+                    }                   
                 }
+                var childSql = this._builder.BuildInsert(childObjItemType);
+                this._uow.Add(childSql, childObjItem, InsertMethodEnum.Child, parentIdName);            
             }
         }
 

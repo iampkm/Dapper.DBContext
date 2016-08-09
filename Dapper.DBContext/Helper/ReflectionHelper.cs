@@ -62,11 +62,11 @@ namespace Dapper.DBContext.Helper
                 var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
                 if (attrs != null) { continue; }
                 //get rid of rowVersion
-                if (pi.Name == _defaultRowVersion && pi.PropertyType == typeof(byte[])) { continue; } 
+                if (pi.Name == _defaultRowVersion && pi.PropertyType == typeof(byte[])) { continue; }
                 // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
-                if (pi.Name == _defaultKey && pi.PropertyType == typeof(int)) { continue; }  
+                if (pi.Name.ToLower() == _defaultKey.ToLower() && pi.PropertyType == typeof(int)) { continue; }
                 // get rid of the aggragation collection object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; }               
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual) { continue; }
                 // find value object
                 if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
                 {
@@ -87,8 +87,8 @@ namespace Dapper.DBContext.Helper
                 var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name);
                 if (attrs != null) { continue; }
                 // get rid of the aggragation collection object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; } 
-              
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual) { continue; }
+
                 // value object
                 if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string) && pi.PropertyType != typeof(byte[]))
                 {
@@ -106,7 +106,7 @@ namespace Dapper.DBContext.Helper
             var propertieInfos = GetPropertyInfos(model);
             foreach (var pi in propertieInfos)
             {
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass)
+                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual)
                 {
                     object childLists = pi.GetValue(model, null);
                     childObjects.Add(childLists);
