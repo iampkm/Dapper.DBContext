@@ -63,7 +63,7 @@ namespace Dapper.DBContext.Builder
 
         public string BuildDelete(Type modelType)
         {
-            var sqlKey = GetModelSqlKey(modelType, Operator.Update);
+            var sqlKey = GetModelSqlKey(modelType, Operator.Delete);
             if (_SqlCache.ContainsKey(sqlKey))
             {
                 return _SqlCache[sqlKey];
@@ -133,7 +133,7 @@ namespace Dapper.DBContext.Builder
             StringBuilder sql = new StringBuilder();
             foreach (QueryArgument argument in queryArgments)
             {
-                ((IDictionary<string, object>)args)[argument.Name] = argument.Value;
+                ((IDictionary<string, object>)args)[argument.ArgumentName] = argument.Value;
                 sql.AppendFormat("{0} {1} @{2} {3} ", this._dialectBuilder.GetColumn(argument.Name), argument.Operator, argument.ArgumentName, argument.Link);
             }
             arguments = args;

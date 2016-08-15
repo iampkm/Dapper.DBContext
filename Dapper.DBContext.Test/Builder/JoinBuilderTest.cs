@@ -36,6 +36,7 @@ namespace Dapper.DBContext.Test.Builder
 
             Assert.AreEqual(0, result.Any());
         }
+             
         
     }
 }

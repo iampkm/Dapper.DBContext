@@ -66,7 +66,7 @@ namespace Dapper.DBContext.Helper
                 // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
                 if (pi.Name.ToLower() == _defaultKey.ToLower() && pi.PropertyType == typeof(int)) { continue; }
                 // get rid of the aggragation collection object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual) { continue; }
+                if ((pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass) || pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; }
                 // find value object
                 if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
                 {
@@ -86,9 +86,8 @@ namespace Dapper.DBContext.Helper
             {
                 var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name);
                 if (attrs != null) { continue; }
-                // get rid of the aggragation collection object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual) { continue; }
-
+                // get rid of the foreign key object 
+                if ((pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass) || pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass) { continue; }
                 // value object
                 if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string) && pi.PropertyType != typeof(byte[]))
                 {
@@ -106,7 +105,7 @@ namespace Dapper.DBContext.Helper
             var propertieInfos = GetPropertyInfos(model);
             foreach (var pi in propertieInfos)
             {
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass || pi.GetGetMethod().IsVirtual)
+                if ((pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass)||pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass )
                 {
                     object childLists = pi.GetValue(model, null);
                     childObjects.Add(childLists);

@@ -117,6 +117,8 @@ namespace Dapper.DBContext.Test.Builder
             var dic = args as IDictionary<string, object>;
             Assert.AreEqual(12, (int)dic["Id"]);
             Assert.AreEqual(24, (int)dic["Id1"]);
+
         }
+
     }
 }

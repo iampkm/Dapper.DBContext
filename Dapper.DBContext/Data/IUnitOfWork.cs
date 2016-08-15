@@ -10,5 +10,9 @@ namespace Dapper.DBContext.Data
     {
         void Add(string sql, object paramObject, InsertMethodEnum method = InsertMethodEnum.Normal, string parentIdName = "");
         void Commit();
+        /// <summary>
+        /// 异步提交
+        /// </summary>
+        void CommitAsync();
     }
 }

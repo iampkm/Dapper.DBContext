@@ -56,8 +56,8 @@ namespace Dapper.DBContext.Data
                                 }
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
-                            default:
-                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
+                            default:                                
+                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                             
                                 break;
                         }
                         if (executeResult <= 0) { 
@@ -69,6 +69,61 @@ namespace Dapper.DBContext.Data
                 }
                 catch (Exception ex)
                 {     
+                    tran.Rollback();
+                    this._sqlList.Clear();
+                    throw ex;
+                }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+        }
+
+
+        public void CommitAsync()
+        {
+            string executeSql = "";
+            int executeResult = 0;
+            using (IDbConnection conn = this._connectionFactory.CreateConnection())
+            {
+                conn.Open();
+                IDbTransaction tran = conn.BeginTransaction();
+                try
+                {
+                    foreach (SqlArgument model in _sqlList)
+                    {
+                        executeSql = model.Sql;
+                        switch (model.InsertMethod)
+                        {
+                            case InsertMethodEnum.Parent:
+                                executeResult = conn.ExecuteScalarAsync<int>(model.Sql, model.ParamObj, tran).Result;
+                                if (!string.IsNullOrWhiteSpace(model.ParentIdName) && !_ParentKeyDic.ContainsKey(model.ParentIdName))
+                                {
+                                    _ParentKeyDic.Add(model.ParentIdName, executeResult);
+                                }
+                                break;
+                            case InsertMethodEnum.Child:
+                                if (_ParentKeyDic.ContainsKey(model.ParentIdName))
+                                {
+                                    executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
+                                }
+                                executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
+                                break;
+                            default:
+                                executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
+                                break;
+                        }
+                        if (executeResult <= 0)
+                        {
+                            throw new Exception(string.Format("rows is zero.sql={0},parameters={1}", model.Sql, model.ParamObj.ToString()));
+                        }
+                    }
+                    tran.Commit();
+                    this._sqlList.Clear();
+                }
+                catch (Exception ex)
+                {
                     tran.Rollback();
                     this._sqlList.Clear();
                     throw ex;

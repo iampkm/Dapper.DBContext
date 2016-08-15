@@ -61,6 +61,7 @@
     <Compile Include="Builder\RowVersionTest.cs" />
     <Compile Include="Builder\SqlBuilderTest.cs" />
     <Compile Include="Domain\Order.cs" />
+    <Compile Include="Helper\LamdaHelperTest.cs" />
     <Compile Include="Helper\ReflectionHelperTest.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

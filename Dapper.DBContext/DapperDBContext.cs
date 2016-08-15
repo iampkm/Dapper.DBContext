@@ -109,6 +109,10 @@ namespace Dapper.DBContext
         {
             this._uow.Commit();
         }
+        public void SaveChangeAsync()
+        {
+            this._uow.CommitAsync();
+        }
 
         public IQuery Table
         {

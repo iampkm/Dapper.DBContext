@@ -78,14 +78,7 @@ namespace Dapper.DBContext.Helper
                 }
 
                 queryProperties.Add(new QueryArgument(entityType, propertyName, argumentName, propertyValue, opr, link));
-
-                //if (propertyValue is string || propertyValue is DateTime)
-                //{
-                //    queryProperties.Add(string.Format("{0} {1} '{2}'", propertyName, opr, propertyValue));
-                //}
-                //else {
-                //    queryProperties.Add(string.Format("{0} {1} {2}", propertyName, opr, propertyValue));
-                //}              
+                    
            }
            else
            {
@@ -94,6 +87,87 @@ namespace Dapper.DBContext.Helper
            
                GetWhere(GetBinaryExpression(body.Right),  queryProperties);
 
+           }
+       }
+
+       public static void ParseExpression<T,TResult>(Expression<Func<T, TResult>> exp)
+       {
+          // var body = exp.Body.NodeType== ExpressionType.Add;
+           var expression = "";
+           if (exp is MemberExpression)
+           {
+               var member = exp as MemberExpression;
+               expression = member.Member.Name;
+               
+           }
+           else {
+               var body = exp as BinaryExpression;
+
+           }
+           
+           
+          // ExpressionType.
+           // a * b     c+b, ,a=b , b-b ,e
+           
+          
+           //if (body.Left.NodeType == ExpressionType.MemberAccess)
+           //{
+           //    MemberExpression memberExp = body.Left as MemberExpression;
+           //    ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
+              
+           //}
+       }
+
+       public static void ParseExp(Expression exp, List<string> list, string link = "")
+       {
+           if (exp is MemberExpression)
+           {
+               var member = exp as MemberExpression;
+               list.Add(member.Member.Name);
+           }
+           else {
+               var body = exp as BinaryExpression;
+               if (body.Left.NodeType == ExpressionType.MemberAccess)
+               {
+                   string line = "";
+                   MemberExpression memberExp = body.Left as MemberExpression;
+                   // ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
+                   line += memberExp.Member.Name;
+                   string operate = GetOperator(body.NodeType);
+                   line += " " + operate;
+                   MemberExpression memberRExp = body.Right as MemberExpression;
+                   // ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
+                   line += memberRExp.Member.Name;
+                   line += " " + link;
+                   list.Add(line);
+               }
+               else {
+                   ParseExp(body.Left, list, GetOperator(body.NodeType));
+                   ParseExp(body.Right, list);
+               }
+           }
+       }      
+
+       public static string GetOperator(ExpressionType type)
+       {
+           switch (type)
+           {
+               case ExpressionType.Add:
+                   return "+";
+
+               case ExpressionType.Divide:
+                   return "/";
+
+               case ExpressionType.Modulo:
+                   return "%";
+
+               case ExpressionType.Multiply:
+                   return "*";
+
+               case ExpressionType.Subtract:
+                   return "-";
+               default:
+                   return string.Empty;
            }
        }
 

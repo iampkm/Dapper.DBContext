@@ -12,9 +12,9 @@ namespace Dapper.DBContext
     {
         TEntity Find<TEntity>(int Id) where TEntity : class;
         TEntity Find<TEntity>(string Id) where TEntity : class;
-        TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
-        IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class;
+        TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;       
         IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class;
+        IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class;
         IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class;
         IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
@@ -32,6 +32,17 @@ namespace Dapper.DBContext
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        IJoinQuery FindPage<TEntity>(int pageIndex , int pageSize) where TEntity : class;
+        IJoinQuery FindPage<TEntity>(int pageIndex, int pageSize) where TEntity : class;
+        Task<TEntity> FindAsync<TEntity>(int Id) where TEntity : class;
+        Task<TEntity> FindAsync<TEntity>(string Id) where TEntity : class;
+        Task<TEntity> FindAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        Task<IEnumerable<TEntity>> FindAsync<TEntity>(string[] Ids) where TEntity : class;
+        Task<IEnumerable<TEntity>> FindAsync<TEntity>(int[] Ids) where TEntity : class;
+        Task<IEnumerable<TEntity>> FindAllAsync<TEntity>() where TEntity : class;
+        Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        bool ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        Task<int> CountAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+
+        
     }
 }

@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AggregateRoot.cs" />
     <Compile Include="DapperDBContext.cs" />
     <Compile Include="DBContextFactory.cs" />
     <Compile Include="Builder\DialectBuilder.cs" />
