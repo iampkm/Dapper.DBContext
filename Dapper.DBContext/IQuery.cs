@@ -18,7 +18,8 @@ namespace Dapper.DBContext
         IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class;
         IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
-        int Count<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        int Count<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
+        TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
         /// <summary>
         /// join query
         /// </summary>
@@ -42,6 +43,7 @@ namespace Dapper.DBContext
         Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         bool ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         Task<int> CountAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
+        Task<TResult> SumAsync<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
 
         
     }

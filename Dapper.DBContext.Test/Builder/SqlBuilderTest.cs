@@ -119,6 +119,46 @@ namespace Dapper.DBContext.Test.Builder
             Assert.AreEqual(24, (int)dic["Id1"]);
 
         }
+          [TestMethod]
+        public void Sum_One_Column()
+        {
+            Expression<Func<tb_time, bool>> where = p => p.Id > 12 && p.Id <= 24;
+               Expression<Func<tb_time, int>> select = p => p.Id ;
+            dynamic args = new ExpandoObject();
+            string target = this._builder.BuildSelectByLamda<tb_time,int>(where, out args,select,"sum");
+            string expect = "select sum(Id) from [tb_time] where [Id] > @Id and [Id] <= @Id1";           
+            Assert.AreEqual(expect, target);
+            var dic = args as IDictionary<string, object>;
+            Assert.AreEqual(12, (int)dic["Id"]);
+            Assert.AreEqual(24, (int)dic["Id1"]);
+        }
+
+          [TestMethod]
+          public void Sum_Two_Column()
+          {
+              Expression<Func<OrderItem, bool>> where = p => p.Id > 12 && p.Id <= 24;
+              Expression<Func<OrderItem, decimal>> select = p => p.Price * p.Quantity;
+              dynamic args = new ExpandoObject();
+              string target = this._builder.BuildSelectByLamda<OrderItem, decimal>(where, out args, select, "sum");
+              string expect = "select sum(Price * Quantity) from [OrderItem] where [Id] > @Id and [Id] <= @Id1";                             
+              Assert.AreEqual(expect, target);
+              var dic = args as IDictionary<string, object>;
+              Assert.AreEqual(12, (int)dic["Id"]);
+              Assert.AreEqual(24, (int)dic["Id1"]);
+          }
+          [TestMethod]
+          public void Sum_Three_Column()
+          {
+              Expression<Func<OrderItem, bool>> where = p => p.Id > 12 && p.Id <= 24;
+              Expression<Func<OrderItem, decimal>> select = p =>(p.Price + p.Quantity)/p.Quantity;
+              dynamic args = new ExpandoObject();
+              string target = this._builder.BuildSelectByLamda<OrderItem, decimal>(where, out args, select, "sum");
+              string expect = "select sum((Price + Quantity) / Quantity) from [OrderItem] where [Id] > @Id and [Id] <= @Id1";
+              Assert.AreEqual(expect, target);
+              var dic = args as IDictionary<string, object>;
+              Assert.AreEqual(12, (int)dic["Id"]);
+              Assert.AreEqual(24, (int)dic["Id1"]);
+          }
 
     }
 }

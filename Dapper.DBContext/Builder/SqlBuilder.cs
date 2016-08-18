@@ -10,6 +10,7 @@ using System.Collections;
 using System.Dynamic;
 using System.Data;
 using Dapper;
+using System.Linq.Expressions;
 namespace Dapper.DBContext.Builder
 {
     public class SqlBuilder : ISqlBuilder
@@ -107,8 +108,34 @@ namespace Dapper.DBContext.Builder
         {
             string columnNames = string.IsNullOrEmpty(columns) == true ? GetColumnNames(typeof(TEntity)) : columns;
             string table = this._dialectBuilder.GetTable(typeof(TEntity));
-            string where = BuildWhere<TEntity>(expression, out arguments);
-            string sql = string.Format("select {0} from {1} where {2}", columnNames, table, where);
+            string where = "";
+            if (expression != null)
+            {
+                where = string.Format("where {0}", BuildWhere<TEntity>(expression, out arguments));
+            }
+            else {
+                arguments = new object();
+            }          
+            string sql = string.Format("select {0} from {1} {2}", columnNames, table, where);
+            return sql;
+        }
+
+        public string BuildSelectByLamda<TEntity, TResult>(Expression<Func<TEntity, bool>> expression, out object arguments, Expression<Func<TEntity, TResult>> select, string function)
+        {
+            List<string> columnExpression = new List<string>();
+            LamdaHelper.ParseColumn(select.Body, columnExpression, "");
+            string columnNames = string.Format("{0}({1})", function, string.Join(" ", columnExpression).Trim());
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            string where = "";
+            if (expression != null)
+            {
+                where = string.Format("where {0}", BuildWhere<TEntity>(expression, out arguments));
+            }
+            else
+            {
+                arguments = new object();
+            }         
+            string sql = string.Format("select {0} from {1} {2}", columnNames, table, where);
             return sql;
         }
 

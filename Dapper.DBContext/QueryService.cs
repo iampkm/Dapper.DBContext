@@ -98,13 +98,22 @@ namespace Dapper.DBContext
             var result = this._executeQuery.ExecuteScalar<int>(sql, args);
             return result > 0;
         }
-        public int Count<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
+        public int Count<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class
         {
             object args = new object();
             string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
             var result = this._executeQuery.ExecuteScalar<int>(sql, args);
             return result;
         }
+
+        public TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda<TEntity,TResult>(expression, out args,select, "sum");
+            var result = this._executeQuery.ExecuteScalar<TResult>(sql, args);
+            return result;
+        }
+        
 
         public IJoinQuery FindJoin<TEntity>() where TEntity : class
         {
@@ -194,6 +203,13 @@ namespace Dapper.DBContext
             return result;
         }
 
+        public Task<TResult> SumAsync<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda<TEntity, TResult>(expression, out args, select, "sum");
+            var result = this._executeQuery.ExecuteScalarAsync<TResult>(sql, args);
+            return result;
+        }
    
     }
 }

@@ -15,6 +15,7 @@ namespace Dapper.DBContext.Builder
         string buildSelectById<TEntity>(bool isOnlyOneId = true);
         string buildSelect<TEntity>();
         string BuildSelectByLamda<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "");
+        string BuildSelectByLamda<TEntity, TResult>(Expression<Func<TEntity, bool>> expression, out object arguments, Expression<Func<TEntity, TResult>> select,string function);
 
     }
 }

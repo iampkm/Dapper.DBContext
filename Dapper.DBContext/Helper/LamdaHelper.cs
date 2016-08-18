@@ -19,16 +19,7 @@ namespace Dapper.DBContext.Helper
            GetWhere(bExpr, sqls);
 
             return sqls;
-       }
-
-       public static List<QueryArgument> GetWhere<T1, T2>(Expression<Func<T1, T2, bool>> where)
-       {
-           var bExpr = GetBinaryExpression(where.Body);
-           List<QueryArgument> sqls = new List<QueryArgument>();
-           GetWhere(bExpr, sqls);
-
-           return sqls; 
-       }
+       }      
 
        public static void GetWhere(BinaryExpression body,  List<QueryArgument> queryProperties,string link="")
        {
@@ -89,61 +80,54 @@ namespace Dapper.DBContext.Helper
 
            }
        }
+            
 
-       public static void ParseExpression<T,TResult>(Expression<Func<T, TResult>> exp)
+       public static void ParseColumn(Expression exp, List<string> list, string link = "")
        {
-          // var body = exp.Body.NodeType== ExpressionType.Add;
-           var expression = "";
-           if (exp is MemberExpression)
-           {
-               var member = exp as MemberExpression;
-               expression = member.Member.Name;
-               
-           }
-           else {
-               var body = exp as BinaryExpression;
-
-           }
-           
-           
-          // ExpressionType.
-           // a * b     c+b, ,a=b , b-b ,e
-           
-          
-           //if (body.Left.NodeType == ExpressionType.MemberAccess)
-           //{
-           //    MemberExpression memberExp = body.Left as MemberExpression;
-           //    ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
-              
-           //}
-       }
-
-       public static void ParseExp(Expression exp, List<string> list, string link = "")
-       {
-           if (exp is MemberExpression)
+           if (exp.NodeType== ExpressionType.MemberAccess)
            {
                var member = exp as MemberExpression;
                list.Add(member.Member.Name);
            }
-           else {
+           else if (exp.NodeType == ExpressionType.Convert)
+           {
+               var unaryExp = exp as UnaryExpression;
+               var memberExp = unaryExp.Operand as MemberExpression;
+               list.Add(memberExp.Member.Name);
+           }
+           else
+           {
                var body = exp as BinaryExpression;
                if (body.Left.NodeType == ExpressionType.MemberAccess)
                {
-                   string line = "";
+                   // string line = "";
                    MemberExpression memberExp = body.Left as MemberExpression;
                    // ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
-                   line += memberExp.Member.Name;
+                   // line += memberExp.Member.Name;
                    string operate = GetOperator(body.NodeType);
-                   line += " " + operate;
-                   MemberExpression memberRExp = body.Right as MemberExpression;
+                   // line += " " + operate;
+                   //  MemberExpression memberRExp = body.Right as MemberExpression;
+                   string rightFiled = "";
+                   if (body.Right.NodeType == ExpressionType.Convert)
+                   {
+                       UnaryExpression memberRExp = body.Right as UnaryExpression;
+                       MemberExpression rightMember = memberRExp.Operand as MemberExpression;
+                       rightFiled = rightMember.Member.Name;
+                   }
+                   if (body.Right.NodeType == ExpressionType.MemberAccess)
+                   {
+                       MemberExpression rightMember = body.Right as MemberExpression;
+                       rightFiled = rightMember.Member.Name;
+                   }
                    // ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
-                   line += memberRExp.Member.Name;
-                   line += " " + link;
-                   list.Add(line);
+                   // line += memberRExp.Member.Name;
+                   // line += " " + link;
+                   list.Add(string.Format("{0} {1} {2} {3}", memberExp.Member.Name, operate, rightFiled, link));
                }
-               else {
-                   ParseExp(body.Left, list, GetOperator(body.NodeType));
-                   ParseExp(body.Right, list);
+               else
+               {
+                   ParseColumn(body.Left, list, GetOperator(body.NodeType));
+                   ParseColumn(body.Right, list);
                }
            }
        }      
