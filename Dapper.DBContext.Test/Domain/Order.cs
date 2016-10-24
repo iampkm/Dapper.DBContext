@@ -7,7 +7,7 @@ using Dapper.DBContext;
 using Dapper.DBContext.Schema;
 namespace Dapper.DBContext.Test.Domain
 {
-   public class Order :BaseEntity<int>
+   public class Order :Entity<int>
     {
        public string Code { get; set; }
 
@@ -23,7 +23,7 @@ namespace Dapper.DBContext.Test.Domain
       
     }
 
-   public class OrderItem : BaseEntity<int>
+   public class OrderItem : Entity<int>
    {
       public int OrderId { get; set; }
 
@@ -55,7 +55,7 @@ namespace Dapper.DBContext.Test.Domain
        WaitPay = 1 ,Paid =2
    }
 
-   public class tb_time :BaseEntity<int>
+   public class tb_time :ConcurrentEntity<int>
    {
        public tb_time() { }
        public tb_time(int id, string code):base(id)
@@ -100,5 +100,20 @@ namespace Dapper.DBContext.Test.Domain
 
         [NotMapped]
         public string Code { get; private set; }
+    }
+
+    public class Category : Entity<string>
+    {
+        public Category()
+        {
+            this.Level = 1;
+        }
+        public string Name { get; set; }
+
+        public string FullName { get; set; }
+
+        public int Level { get; set; }
+
+
     }
 }

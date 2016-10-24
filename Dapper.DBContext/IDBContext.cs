@@ -14,6 +14,9 @@ namespace Dapper.DBContext
         void Update<TEntity>(TEntity[] models) where TEntity : class;
         void Delete<TEntity>(TEntity model) where TEntity : class;
         void Delete<TEntity>(TEntity[] models) where TEntity : class;
+        void Delete<TEntity>(object id) where TEntity : class;
+        void Delete<TEntity>(Array ids) where TEntity : class;
+        void Delete<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         void SaveChange();
         void SaveChangeAsync();
         IQuery Table { get; }       

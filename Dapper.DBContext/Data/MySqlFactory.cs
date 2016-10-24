@@ -20,7 +20,7 @@ namespace Dapper.DBContext.Data
 
         public string PageFormat
         {
-            get { return "Select {SelectColumns} from {TableName} {TableAlias} {JoinClause} {WhereClause} Order By  {TableAlias}.{OrderBy} LIMIT (({PageIndex}-1) * {PageSize} + 1),{PageSize}"; }
+            get { return "Select {SelectColumns} from {TableName} {TableAlias} {JoinClause} where 1=1 {WhereClause} Order By  {TableAlias}.{OrderBy} LIMIT {Offset},{PageSize}"; }
         }
 
         public string IdentityFromat

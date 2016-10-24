@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper.DBContext.Builder;
 using System.Data;
+using System.Diagnostics;
 namespace Dapper.DBContext.Data
 {
     public class ExecuteQuery : IExecuteQuery
@@ -19,6 +20,7 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
+            print(sql);
             var result = this._connection.ExecuteScalar<T>(sql, param);
             this._connection.Close();
             return result;
@@ -27,6 +29,7 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
+            print(sql);
             var result = this._connection.ExecuteScalarAsync<T>(sql, param);
             this._connection.Close();
             return result;
@@ -36,6 +39,7 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
+            print(sql);
             var result = this._connection.Query<TEntity>(sql, param);
             this._connection.Close();
             return result;
@@ -45,6 +49,7 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
+            print(sql);
             var result = this._connection.QueryAsync<TEntity>(sql, param);
             this._connection.Close();
             return result;
@@ -54,7 +59,8 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
-            var result = this._connection.QueryFirst<TEntity>(sql, param);
+            print(sql);
+            var result = this._connection.Query<TEntity>(sql, param).FirstOrDefault();
             this._connection.Close();
             return result;
         }
@@ -63,9 +69,16 @@ namespace Dapper.DBContext.Data
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
-            var result = this._connection.QueryFirstAsync<TEntity>(sql, param);
+            print(sql);
+            var result = this._connection.QueryFirstOrDefaultAsync<TEntity>(sql, param); 
             this._connection.Close();
             return result;
+        }
+
+        private void print(string msg)
+        {
+            if (Debugger.IsAttached)
+                Trace.WriteLine(msg);
         }
     }
 }

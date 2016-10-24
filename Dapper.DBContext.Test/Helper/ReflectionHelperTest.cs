@@ -9,12 +9,12 @@ namespace Dapper.DBContext.Test.Helper
     [TestClass]
     public class ReflectionHelperTest
     {
-       
+
 
         [TestInitialize]
         public void Init()
         {
-           
+
         }
 
         [TestMethod]
@@ -34,6 +34,17 @@ namespace Dapper.DBContext.Test.Helper
             Assert.IsTrue(target.Contains("CustomerID"));
             Assert.IsTrue(target.Contains("CreateOn"));
         }
+
+        [TestMethod]
+        public void GetBuildSqlProperties_string_id_key_test()
+        {
+            var target = ReflectionHelper.GetBuildSqlProperties(typeof(Category));
+            Assert.IsNotNull(target);
+            Assert.AreEqual(2, target.Count);
+            Assert.IsTrue(target.Contains("Id"));
+            Assert.IsTrue(target.Contains("Name"));
+        }
+
         [TestMethod]
         public void GetBuildSqlProperties_Customer_AutoID_Domin_test()
         {
@@ -72,6 +83,15 @@ namespace Dapper.DBContext.Test.Helper
             Assert.IsTrue(target.Contains("CustomerID"));
             Assert.IsTrue(target.Contains("CreateOn"));
         }
+        [TestMethod]
+        public void GetSelectSqlProperties_string_key_test()
+        {
+            var target = ReflectionHelper.GetSelectSqlProperties(typeof(Category));
+            Assert.IsNotNull(target);
+            Assert.AreEqual(4, target.Count);
+            Assert.IsTrue(target.Contains("Id"));
+            Assert.IsTrue(target.Contains("Name"));
+        }
 
         [TestMethod]
         public void GetKeyName_default_Domain_test()
@@ -84,6 +104,42 @@ namespace Dapper.DBContext.Test.Helper
         {
             var target = ReflectionHelper.GetKeyName(typeof(CustomerAutoIDEntity));
             Assert.AreEqual("CustomerID", target);
+        }
+
+        [TestMethod]
+        public void GetObjectPropertyValue_TEST_calss_OBJ()
+        {
+            Category cat = new Category()
+            {
+                Id = "01",
+                Name = "shp",
+                FullName = "222",
+                Level = 1
+            };
+            var target = ReflectionHelper.GetObjectPropertyValue(cat);
+            Assert.AreEqual("Dapper.DBContext.Test.Domain.CategoryName : shp ;FullName : 222 ;Level : 1 ;Id : 01 ;", target);
+        }
+
+        [TestMethod]
+        public void GetObjectPropertyValue_TEST_value_OBJ()
+        {
+            var cat = 111;
+            var target = ReflectionHelper.GetObjectPropertyValue(cat);
+            Assert.AreEqual("111", target);
+        }
+
+        [TestMethod]
+        public void isIdentity_test()
+        {
+            Category cat = new Category()
+            {
+                Id = "01",
+                Name = "shp",
+                FullName = "222",
+                Level = 1
+            };
+            var target = ReflectionHelper.isIdentity(cat.GetType());
+            Assert.AreEqual(false, target);
         }
     }
 }

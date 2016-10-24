@@ -151,7 +151,7 @@ namespace Dapper.DBContext.Builder
             //  Dictionary<string, object> dic = new Dictionary<string, object>();
             dynamic args = new ExpandoObject();
             StringBuilder where = new StringBuilder();
-            where.Append("where ");
+           // where.Append("where ");
             // object arguments = new object();
             string template = "{TableAlias}.{ColumnName} {Operator} @{ArgumentName} {Link} ";
             foreach (QueryArgument argument in queryArgments)
@@ -177,6 +177,8 @@ namespace Dapper.DBContext.Builder
             sqlTemplate = this._dialectBuilder.DBDialect.PageFormat;
             sqlTemplate = sqlTemplate.Replace("{PageIndex}", this._joinBuilder.PageIndex.ToString());
             sqlTemplate = sqlTemplate.Replace("{PageSize}", this._joinBuilder.PageSize.ToString());
+            sqlTemplate = sqlTemplate.Replace("{Offset}", ((this._joinBuilder.PageIndex - 1) * this._joinBuilder.PageSize).ToString());
+            
             return sqlTemplate;           
         }
 

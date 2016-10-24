@@ -18,28 +18,21 @@ namespace Dapper.DBContext
         /// </summary>
         TKey Id { get; set; }       
     }
-
-    public abstract class BaseEntity<TKey> : IEntity<TKey>
+    /// <summary>
+    /// 实体基类
+    /// </summary>
+    /// <typeparam name="TKey"></typeparam>
+    public abstract class Entity<TKey> : IEntity<TKey>
     {
-        public BaseEntity() { }       
-        public BaseEntity(TKey id)
+        public Entity() { }       
+        public Entity(TKey id)
         {
             this.Id = id;         
         }
         /// <summary>
         /// 实体Id
         /// </summary>
-        public TKey Id { get; set; }
-        /// <summary>
-        /// 版本乐观并发字段，无须开发显示设置值
-        /// </summary>
-        public byte[] RowVersion { get; private set; }
-
-        //private long DateTimeToStamp(System.DateTime time)
-        //{
-        //    System.DateTime startTime = TimeZone.CurrentTimeZone.ToLocalTime(new System.DateTime(1970, 1, 1));
-        //    return (long)(time - startTime).TotalSeconds;
-        //}
+        public TKey Id { get; set; }        
 
     }
 }

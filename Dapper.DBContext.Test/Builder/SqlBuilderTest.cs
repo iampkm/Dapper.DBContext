@@ -33,7 +33,7 @@ namespace Dapper.DBContext.Test.Builder
         public void BuilderInsert_test()
         {
             string target = this._builder.BuildInsert(typeof(Order));
-            string expect = "insert into [Order] ([Code],[City],[Area],[Status],[CreateAt],[CreateBy]) values (@Code,@City,@Area,@Status,@CreateAt,@CreateBy) SELECT SCOPE_IDENTITY()";
+            string expect = "insert into [Order] ([Code],[City],[Area],[Status],[CreateAt],[CreateBy]) values (@Code,@City,@Area,@Status,@CreateAt,@CreateBy);SELECT SCOPE_IDENTITY()";
             Assert.AreEqual(expect, target);
         }
         [TestMethod]
@@ -159,6 +159,8 @@ namespace Dapper.DBContext.Test.Builder
               Assert.AreEqual(12, (int)dic["Id"]);
               Assert.AreEqual(24, (int)dic["Id1"]);
           }
+
+         
 
     }
 }

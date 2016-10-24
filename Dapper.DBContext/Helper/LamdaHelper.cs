@@ -42,12 +42,10 @@ namespace Dapper.DBContext.Helper
                    ParameterExpression paraExp = memberExp.Expression as ParameterExpression;
                    entityType = paraExp.Type;
                   
-                   ConstantExpression pvExp = null;
                    switch (callExp.Method.Name)
                    {
                        case "Like":
-                           pvExp = callExp.Arguments[1] as ConstantExpression;
-                           propertyValue = pvExp.Value;
+                           propertyValue = GetValue(callExp.Arguments[1]);
                            opr = "Like";
                            break;                      
                        default:

@@ -49,5 +49,29 @@ namespace Dapper.DBContext.Test.Helper
             Regex rg = new Regex("(?<=(" + s + "))[.\\s\\S]*?(?=(" + e + "))", RegexOptions.Multiline | RegexOptions.Singleline);
             return rg.Match(str).Value;
         }
+        [TestMethod]
+        public void TestWhere()
+        {
+            string value ="234"+"%";
+            Expression<Func<Category, bool>> exp = n => n.Id.Like(value) && n.Level == 2;
+            var result= LamdaHelper.GetWhere<Category>(exp);
+            Assert.AreEqual("11", "11");
+        }
+
+        [TestMethod]
+        public void TestWhere_constraint()
+        {           
+            Category cat = new Category()
+            {
+                Id = "01",
+                Name = "shp",
+                FullName = "222",
+                Level = 1
+            };
+            Expression<Func<Category, bool>> exp = n => n.Id.Like(cat.Id+"%") && n.Level == cat.Level;
+            var result = LamdaHelper.GetWhere<Category>(exp);
+            Assert.AreEqual("11", "11");
+        }
+            
     }
 }

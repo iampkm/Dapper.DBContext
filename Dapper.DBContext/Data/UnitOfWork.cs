@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper.DBContext.Builder;
+using System.Diagnostics;
+using Dapper.DBContext.Helper;
 namespace Dapper.DBContext.Data
 {
     /// <summary>
@@ -40,6 +42,7 @@ namespace Dapper.DBContext.Data
                     foreach (SqlArgument model in _sqlList)
                     {
                         executeSql = model.Sql;
+                        print(executeSql);
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
@@ -60,8 +63,9 @@ namespace Dapper.DBContext.Data
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                             
                                 break;
                         }
-                        if (executeResult <= 0) { 
-                            throw new Exception(string.Format("rows is zero.sql={0},parameters={1}", model.Sql, model.ParamObj.ToString()));
+                        if (executeResult <= 0) {
+                            string parameters = ReflectionHelper.GetObjectPropertyValue(model.ParamObj);
+                            throw new Exception(string.Format("sql exception:rows is zero.sql={0} , parameters={1}", model.Sql, parameters));
                         }
                     }
                     tran.Commit();
@@ -72,6 +76,7 @@ namespace Dapper.DBContext.Data
                     tran.Rollback();
                     this._sqlList.Clear();
                     throw ex;
+                    //throw new Exception(string.Format("sql exception.sql={0}.", executeSql), ex);
                 }
                 finally
                 {
@@ -94,6 +99,7 @@ namespace Dapper.DBContext.Data
                     foreach (SqlArgument model in _sqlList)
                     {
                         executeSql = model.Sql;
+                        print(executeSql);
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
@@ -126,13 +132,18 @@ namespace Dapper.DBContext.Data
                 {
                     tran.Rollback();
                     this._sqlList.Clear();
-                    throw ex;
+                    throw new Exception(string.Format("sql exception.sql={0}.", executeSql),ex);
                 }
                 finally
                 {
                     conn.Close();
                 }
             }
+        }
+        private void print(string msg)
+        {
+            if (Debugger.IsAttached)
+                Trace.WriteLine(msg);
         }
     }
 }

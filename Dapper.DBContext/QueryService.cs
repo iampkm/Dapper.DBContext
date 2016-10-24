@@ -48,7 +48,7 @@ namespace Dapper.DBContext
         private TEntity FindById<TEntity>(object Id) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>();
-            var result = this._executeQuery.QuerySingle<TEntity>(sql, Id);
+            var result = this._executeQuery.QuerySingle<TEntity>(sql, new { Id = Id });
             return result;
         }
 
@@ -58,6 +58,11 @@ namespace Dapper.DBContext
             string sql = this._builder.BuildSelectByLamda(expression, out args);
             var result = this._executeQuery.QuerySingle<TEntity>(sql, args);
             return result;
+        }
+
+        public TEntity Find<TEntity>(string sql, object param) where TEntity : class
+        {
+            return this.Select.QuerySingle<TEntity>(sql, param);
         }
 
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
@@ -73,7 +78,7 @@ namespace Dapper.DBContext
         private IEnumerable<TEntity> FindByIds<TEntity>(object Ids) where TEntity : class
         {
             string sql = this._builder.buildSelectById<TEntity>(false);
-            var result = this._executeQuery.Query<TEntity>(sql, Ids);
+            var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
             return result;
         }
 
@@ -91,6 +96,11 @@ namespace Dapper.DBContext
             var result = this._executeQuery.Query<TEntity>(sql, args);
             return result;
         }
+
+        public IEnumerable<TEntity> FindAll<TEntity>(string sql, object param) where TEntity : class
+        {
+            return this.Select.Query<TEntity>(sql, param);
+        }
         public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             object args = new object();
@@ -105,15 +115,21 @@ namespace Dapper.DBContext
             var result = this._executeQuery.ExecuteScalar<int>(sql, args);
             return result;
         }
-
+        public int Count<TEntity>(string where, object param) where TEntity : class
+        {
+            if (string.IsNullOrEmpty(where)) { return Count<TEntity>(); }
+            string sql = string.Format("{0} where 1=1 {1}", _builder.buildSelect<TEntity>("count(*)"), where);
+            var result = this._executeQuery.ExecuteScalar<int>(sql, param);
+            return result;
+        }
         public TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
         {
             object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity,TResult>(expression, out args,select, "sum");
+            string sql = this._builder.BuildSelectByLamda<TEntity, TResult>(expression, out args, select, "sum");
             var result = this._executeQuery.ExecuteScalar<TResult>(sql, args);
             return result;
         }
-        
+
 
         public IJoinQuery FindJoin<TEntity>() where TEntity : class
         {
@@ -154,6 +170,10 @@ namespace Dapper.DBContext
             var result = this._executeQuery.QuerySingleAsync<TEntity>(sql, args);
             return result;
         }
+        public Task<TEntity> FindAsync<TEntity>(string sql, object param) where TEntity : class
+        {
+            return this.Select.QuerySingleAsync<TEntity>(sql, param);
+        }
 
         public Task<IEnumerable<TEntity>> FindAsync<TEntity>(string[] Ids) where TEntity : class
         {
@@ -187,6 +207,11 @@ namespace Dapper.DBContext
             return result;
         }
 
+        public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(string sql, object param) where TEntity : class
+        {
+            return this.Select.QueryAsync<TEntity>(sql, param);
+        }
+
         public bool ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             object args = new object();
@@ -195,7 +220,7 @@ namespace Dapper.DBContext
             return result.Result > 0;
         }
 
-        public Task<int> CountAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
+        public Task<int> CountAsync<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class
         {
             object args = new object();
             string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
@@ -203,6 +228,13 @@ namespace Dapper.DBContext
             return result;
         }
 
+        public Task<int> CountAsync<TEntity>(string where, object param) where TEntity : class
+        {
+            if (string.IsNullOrEmpty(where)) { return CountAsync<TEntity>(); }
+            string sql = string.Format("{0} where  1=1  {1}", _builder.buildSelect<TEntity>("count(*)"), where);
+            var result = this._executeQuery.ExecuteScalarAsync<int>(sql, param);
+            return result;
+        }
         public Task<TResult> SumAsync<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
         {
             object args = new object();
@@ -210,6 +242,6 @@ namespace Dapper.DBContext
             var result = this._executeQuery.ExecuteScalarAsync<TResult>(sql, args);
             return result;
         }
-   
+
     }
 }

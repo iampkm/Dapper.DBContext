@@ -34,7 +34,7 @@ namespace Dapper.DBContext.Builder
             var properties = ReflectionHelper.GetBuildSqlProperties(modelType);
             var values = string.Join(",", properties.Select(name => "@" + name));
             var columns = string.Join(",", properties.Select(name => this._dialectBuilder.GetColumn(name)));
-            var sql = string.Format("insert into {0} ({1}) values ({2}) {3}", table, columns, values, this._dialectBuilder.DBDialect.IdentityFromat);
+            var sql = string.Format("insert into {0} ({1}) values ({2});{3}", table, columns, values, this._dialectBuilder.DBDialect.IdentityFromat);
             _SqlCache[sqlKey] = sql;
             return sql;
 
@@ -62,7 +62,7 @@ namespace Dapper.DBContext.Builder
             return sql;
         }
 
-        public string BuildDelete(Type modelType)
+        public string BuildDelete(Type modelType, bool isOnlyOneId = true)
         {
             var sqlKey = GetModelSqlKey(modelType, Operator.Delete);
             if (_SqlCache.ContainsKey(sqlKey))
@@ -75,8 +75,24 @@ namespace Dapper.DBContext.Builder
             {
                 rowVersion = string.Format("and [RowVersion]=@RowVersion");
             }
-            var sql = string.Format("delete from {0} where {1}=@{2} {3}", table, this._dialectBuilder.GetKey(modelType), this._dialectBuilder.GetKey(modelType, false), rowVersion);
-            _SqlCache[sqlKey] = sql;
+            var operate = "in";
+            if (isOnlyOneId) { operate = "="; }
+            var sql = string.Format("delete from {0} where {1} {4} @{2} {3}", table, this._dialectBuilder.GetKey(modelType), this._dialectBuilder.GetKey(modelType, false), rowVersion, operate);
+            //暂时只缓存  =  号的删除sql
+            if (isOnlyOneId) { _SqlCache[sqlKey] = sql; }
+            return sql;
+        }
+
+        public string buildDeleteByLamda<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments)
+        {
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            //var rowVersion = "";
+            //if (ReflectionHelper.GetPropertyInfos(typeof(TEntity)).Exists(p => p.Name == "RowVersion" && p.PropertyType == typeof(byte[])))
+            //{
+            //    rowVersion = string.Format("and [RowVersion]=@RowVersion");
+            //}
+            var where = string.Format("where {0}", BuildWhere<TEntity>(expression, out arguments));
+            var sql = string.Format("delete from {0} {1}", table, where);
             return sql;
         }
 
@@ -113,9 +129,10 @@ namespace Dapper.DBContext.Builder
             {
                 where = string.Format("where {0}", BuildWhere<TEntity>(expression, out arguments));
             }
-            else {
+            else
+            {
                 arguments = new object();
-            }          
+            }
             string sql = string.Format("select {0} from {1} {2}", columnNames, table, where);
             return sql;
         }
@@ -134,7 +151,7 @@ namespace Dapper.DBContext.Builder
             else
             {
                 arguments = new object();
-            }         
+            }
             string sql = string.Format("select {0} from {1} {2}", columnNames, table, where);
             return sql;
         }
@@ -150,6 +167,13 @@ namespace Dapper.DBContext.Builder
             string table = this._dialectBuilder.GetTable(typeof(TEntity));
             string sql = string.Format("select {0} from {1} ", columnNames, table);
             _SqlCache[sqlKey] = sql;
+            return sql;
+        }
+        public string buildSelect<TEntity>(string columns)
+        {
+            if (string.IsNullOrEmpty(columns)) { return buildSelect<TEntity>(); }
+            string table = this._dialectBuilder.GetTable(typeof(TEntity));
+            string sql = string.Format("select {0} from {1} t0 ", columns, table);  //为单表统计函数，表别名为 t0
             return sql;
         }
 
