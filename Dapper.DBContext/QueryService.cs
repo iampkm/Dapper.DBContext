@@ -67,20 +67,26 @@ namespace Dapper.DBContext
 
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
         {
-            return FindByIds<TEntity>(Ids);
-        }
-
-        public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class
-        {
-            return FindByIds<TEntity>(Ids);
-        }
-
-        private IEnumerable<TEntity> FindByIds<TEntity>(object Ids) where TEntity : class
-        {
+           // return FindByIds<TEntity>(Ids);
             string sql = this._builder.buildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
             return result;
         }
+
+        public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class
+        {
+           // return FindByIds<TEntity>(Ids);
+            string sql = this._builder.buildSelectById<TEntity>(false);
+            var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
+            return result;
+        }
+
+        //private IEnumerable<TEntity> FindByIds<TEntity>(object Ids) where TEntity : class
+        //{
+        //    string sql = this._builder.buildSelectById<TEntity>(false);
+        //    var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
+        //    return result;
+        //}
 
         public IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class
         {

@@ -106,17 +106,17 @@ namespace Dapper.DBContext.Builder
                 sqlKey = GetModelSqlKey(typeof(TEntity), Operator.SelectById);
             }
 
-            if (_SqlCache.ContainsKey(sqlKey))
-            {
-                return _SqlCache[sqlKey];
-            }
+            //if (_SqlCache.ContainsKey(sqlKey))
+            //{
+            //    return _SqlCache[sqlKey];
+            //}
 
             string table = this._dialectBuilder.GetTable(typeof(TEntity));
             string columnNames = GetColumnNames(typeof(TEntity));
             string key = this._dialectBuilder.GetKey(typeof(TEntity));
             string keyParameter = this._dialectBuilder.GetKey(typeof(TEntity), false);
             string sql = string.Format("select {0} from {1} where {2} {3} @{4}", columnNames, table, key, Operation, keyParameter);
-            _SqlCache[sqlKey] = sql;
+           // _SqlCache[sqlKey] = sql;
             return sql;
         }
 
