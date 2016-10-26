@@ -98,7 +98,7 @@ namespace Dapper.DBContext
             var model = models[0];
             string sql = this._builder.BuildUpdate(model.GetType());
 
-            this._uow.Add(sql, model);
+            this._uow.Add(sql, models);
         }
 
         public void Delete<TEntity>(TEntity model) where TEntity : class
