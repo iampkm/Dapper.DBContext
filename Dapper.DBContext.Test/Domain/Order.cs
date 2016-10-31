@@ -9,6 +9,10 @@ namespace Dapper.DBContext.Test.Domain
 {
    public class Order :Entity<int>
     {
+
+       public Order() {
+           this.Items = new List<OrderItem>();
+       }
        public string Code { get; set; }
 
        public Address Address { get; set; }
@@ -19,7 +23,7 @@ namespace Dapper.DBContext.Test.Domain
 
        public int CreateBy { get; set; }
 
-       public IList<OrderItem> Items { get; set; }
+       public virtual IList<OrderItem> Items { get; set; }
       
     }
 

@@ -66,7 +66,7 @@ namespace Dapper.DBContext.Helper
             {
                 if (key.GetType() == typeof(int)) { result = true; }
             }
-            var keyPoperties = properties.Where(n => n.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && n.GetType() == typeof(int)).FirstOrDefault();
+            var keyPoperties = properties.Where(n => n.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && n.PropertyType == typeof(int)).FirstOrDefault();
             if (keyPoperties != null)
             {
                 result = true;
