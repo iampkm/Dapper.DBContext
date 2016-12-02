@@ -30,6 +30,14 @@ namespace Dapper.DBContext
         int Count<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
         int Count<TEntity>(string where, object param) where TEntity : class;
         TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
+        /// <summary>
+        /// 查询，返回一行一列值
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        TResult FindScalar<TResult>(string sql, object param);
 
         /// <summary>
         /// join query

@@ -135,8 +135,11 @@ namespace Dapper.DBContext
             var result = this._executeQuery.ExecuteScalar<TResult>(sql, args);
             return result;
         }
-
-
+        public TResult FindScalar<TResult>(string sql, object param)
+        {
+            var result = this._executeQuery.ExecuteScalar<TResult>(sql, param);
+            return result;
+        }
         public IJoinQuery FindJoin<TEntity>() where TEntity : class
         {
             var entityType = typeof(TEntity);
