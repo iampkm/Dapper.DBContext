@@ -20,6 +20,7 @@ namespace Dapper.DBContext
         IUnitOfWork _uow;
         ISqlBuilder _builder;
         IConnectionFactory _connectionFactory;
+        IExecute _command;
 
         public DapperDBContext(string connectionStringName)
         {
@@ -28,6 +29,7 @@ namespace Dapper.DBContext
             this._iquery = new QueryService(connectionStringName);
             this._uow = new UnitOfWork(this._connectionFactory);
             this._builder = this._connectionFactory.CreateBuilder();
+            this._command = new ExecuteService(this._connectionFactory, this._uow);
         }
 
         public DapperDBContext(string connectionStringName, IQuery iquery)
@@ -147,7 +149,9 @@ namespace Dapper.DBContext
         {
             get { return this._iquery; }
         }
-
-       
+        public IExecute Command
+        {
+            get { return this._command; }
+        }
     }
 }

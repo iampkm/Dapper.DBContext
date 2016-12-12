@@ -47,6 +47,8 @@
   <ItemGroup>
     <Compile Include="ConcurrentEntity.cs" />
     <Compile Include="DapperDBContext.cs" />
+    <Compile Include="Data\ExecuteService.cs" />
+    <Compile Include="Data\IExecute.cs" />
     <Compile Include="DBContextFactory.cs" />
     <Compile Include="Builder\DialectBuilder.cs" />
     <Compile Include="Data\IConnectionFactory.cs" />

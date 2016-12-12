@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
+using Dapper.DBContext.Data;
 namespace Dapper.DBContext
 {
    public interface IDBContext
@@ -18,6 +19,7 @@ namespace Dapper.DBContext
         void Delete<TEntity>(Array ids) where TEntity : class;
         void Delete<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         void SaveChange();
-        IQuery Table { get; }       
+        IQuery Table { get; }
+        IExecute Command { get; }
     }
 }

@@ -34,7 +34,7 @@ namespace Dapper.DBContext
         /// <summary>
         /// Common Query method,execute sql 
         /// </summary>
-        protected IExecuteQuery Select { get { return new ExecuteQuery(this._connectionFactory); } }
+        public IExecuteQuery Context { get { return this._executeQuery; } }
 
         public TEntity Find<TEntity>(int Id) where TEntity : class
         {
@@ -62,7 +62,7 @@ namespace Dapper.DBContext
 
         public TEntity Find<TEntity>(string sql, object param) where TEntity : class
         {
-            return this.Select.QuerySingle<TEntity>(sql, param);
+            return this._executeQuery.QuerySingle<TEntity>(sql, param);
         }
 
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
@@ -105,7 +105,7 @@ namespace Dapper.DBContext
 
         public IEnumerable<TEntity> FindAll<TEntity>(string sql, object param) where TEntity : class
         {
-            return this.Select.Query<TEntity>(sql, param);
+            return this._executeQuery.Query<TEntity>(sql, param);
         }
         public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
@@ -181,7 +181,7 @@ namespace Dapper.DBContext
         }
         public Task<TEntity> FindAsync<TEntity>(string sql, object param) where TEntity : class
         {
-            return this.Select.QuerySingleAsync<TEntity>(sql, param);
+            return this._executeQuery.QuerySingleAsync<TEntity>(sql, param);
         }
 
         public Task<IEnumerable<TEntity>> FindAsync<TEntity>(string[] Ids) where TEntity : class
@@ -218,7 +218,7 @@ namespace Dapper.DBContext
 
         public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(string sql, object param) where TEntity : class
         {
-            return this.Select.QueryAsync<TEntity>(sql, param);
+            return this._executeQuery.QueryAsync<TEntity>(sql, param);
         }
 
         public bool ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class

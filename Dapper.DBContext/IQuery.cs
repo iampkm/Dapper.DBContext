@@ -1,4 +1,5 @@
 ﻿using Dapper.DBContext.Builder;
+using Dapper.DBContext.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Dapper.DBContext
 {
     public interface IQuery
     {
+        IExecuteQuery Context { get; }
         TEntity Find<TEntity>(int Id) where TEntity : class;
         TEntity Find<TEntity>(string Id) where TEntity : class;
         TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
