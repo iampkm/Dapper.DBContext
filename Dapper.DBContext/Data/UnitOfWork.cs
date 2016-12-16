@@ -70,6 +70,7 @@ namespace Dapper.DBContext.Data
                     }
                     tran.Commit();
                     this._sqlList.Clear();
+                    this._ParentKeyDic.Clear();
                 }
                 catch (Exception ex)
                 {     
@@ -127,6 +128,7 @@ namespace Dapper.DBContext.Data
                     }
                     tran.Commit();
                     this._sqlList.Clear();
+                    this._ParentKeyDic.Clear();
                 }
                 catch (Exception ex)
                 {
