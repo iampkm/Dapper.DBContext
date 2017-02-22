@@ -13,7 +13,7 @@ namespace Dapper.DBContext.Data
         /// <param name="sql"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        int Execute(string sql, object param = null);
+        int Execute(string sql, object param = null,int? commandTimeout = null);
         /// <summary>
         /// 加入工作单元，纳入事务执行
         /// </summary>

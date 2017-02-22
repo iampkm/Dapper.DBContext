@@ -18,12 +18,12 @@ namespace Dapper.DBContext.Data
             this._uow = uow;
         }
 
-        public int Execute(string sql, object param = null)
+        public int Execute(string sql, object param = null, int? commandTimeout = null)
         {
             this._connection = this._connectionFactory.CreateConnection();
             this._connection.Open();
             print(sql);
-            var result = this._connection.Execute(sql, param);
+            var result = this._connection.Execute(sql, param,null, commandTimeout);
             this._connection.Close();
             return result;
         }
