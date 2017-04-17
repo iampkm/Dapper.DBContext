@@ -20,11 +20,22 @@ namespace Dapper.DBContext.Data
 
         public int Execute(string sql, object param = null, int? commandTimeout = null)
         {
-            this._connection = this._connectionFactory.CreateConnection();
-            this._connection.Open();
-            print(sql);
-            var result = this._connection.Execute(sql, param,null, commandTimeout);
-            this._connection.Close();
+            var result = 0;
+            try
+            {
+                this._connection = this._connectionFactory.CreateConnection();
+                this._connection.Open();
+                print(sql);
+                result = this._connection.Execute(sql, param, null, commandTimeout);                
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally {
+                this._connection.Close();
+            }
+           
             return result;
         }
 

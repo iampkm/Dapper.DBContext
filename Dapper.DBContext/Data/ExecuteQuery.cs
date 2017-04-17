@@ -18,11 +18,22 @@ namespace Dapper.DBContext.Data
         }
         public T ExecuteScalar<T>(string sql, object param)
         {
-            this._connection = this._connectionFactory.CreateConnection();
-            this._connection.Open();
-            print(sql);
-            var result = this._connection.ExecuteScalar<T>(sql, param);
-            this._connection.Close();
+            var result = default(T);
+            try
+            {
+                this._connection = this._connectionFactory.CreateConnection();
+                this._connection.Open();
+                print(sql);
+                result = this._connection.ExecuteScalar<T>(sql, param);               
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally {
+                this._connection.Close();  
+            }
+           
             return result;
         }
         public Task<T> ExecuteScalarAsync<T>(string sql, object param)
@@ -37,11 +48,21 @@ namespace Dapper.DBContext.Data
 
         public IEnumerable<TEntity> Query<TEntity>(string sql, object param)
         {
-            this._connection = this._connectionFactory.CreateConnection();
-            this._connection.Open();
-            print(sql);
-            var result = this._connection.Query<TEntity>(sql, param);
-            this._connection.Close();
+            IEnumerable<TEntity> result = new List<TEntity>();
+            try
+            {
+                this._connection = this._connectionFactory.CreateConnection();
+                this._connection.Open();
+                print(sql);
+                result = this._connection.Query<TEntity>(sql, param);               
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally {
+                this._connection.Close();
+            }           
             return result;
         }
 
@@ -57,11 +78,23 @@ namespace Dapper.DBContext.Data
 
         public TEntity QuerySingle<TEntity>(string sql, object param)
         {
-            this._connection = this._connectionFactory.CreateConnection();
-            this._connection.Open();
-            print(sql);
-            var result = this._connection.Query<TEntity>(sql, param).FirstOrDefault();
-            this._connection.Close();
+            TEntity result = default(TEntity);
+            try
+            {
+                this._connection = this._connectionFactory.CreateConnection();
+                this._connection.Open();
+                print(sql);
+                result = this._connection.Query<TEntity>(sql, param).FirstOrDefault();
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally {
+                this._connection.Close();
+            }
+           
             return result;
         }
 
