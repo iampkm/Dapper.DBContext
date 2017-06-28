@@ -6,20 +6,15 @@ namespace Dapper.DBContext.Data
 {
     public class SqlServerFactory :IConnectionFactory,IDataBaseDialect
     {
-        IDbConnection _connection;
+       
         string _connectionStringName;
         public SqlServerFactory(string connectionStringName)
         {
             this._connectionStringName = connectionStringName;
         } 
         public override IDbConnection CreateConnection()
-        {
-            if (_connection == null)
-            {
-                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
-                _connection = new SqlConnection(connectionString);
-            }
-            return _connection;
+        {           
+            return new SqlConnection(ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString);
         }
 
         public override ISqlBuilder CreateBuilder()

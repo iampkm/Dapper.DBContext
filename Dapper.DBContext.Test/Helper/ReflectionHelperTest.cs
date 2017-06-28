@@ -141,5 +141,22 @@ namespace Dapper.DBContext.Test.Helper
             var target = ReflectionHelper.isIdentity(cat.GetType());
             Assert.AreEqual(false, target);
         }
+         [TestMethod]
+        public void SetIdValue()
+        {
+            Order model = new Order()
+            {
+                Id = 1,
+                Code = "1111"
+            };
+
+            object obj = model;
+
+            var t= obj.GetType();
+            var pi = t.GetProperty("Id", typeof(int));
+            pi.SetValue(obj, 2);
+
+            Assert.AreEqual(2, model.Id);
+        }
     }
 }

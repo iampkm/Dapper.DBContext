@@ -5,8 +5,7 @@ using Dapper.DBContext.Builder;
 namespace Dapper.DBContext.Data
 {
     public class MySqlFactory : IConnectionFactory, IDataBaseDialect
-    {
-         IDbConnection _connection;
+    {        
         string _connectionStringName;
         public MySqlFactory(string connectionStringName)
         {
@@ -29,13 +28,8 @@ namespace Dapper.DBContext.Data
         }
 
         public override IDbConnection CreateConnection()
-        {           
-            if (_connection == null)
-            {
-                string connectionString = ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString;
-                _connection = new MySqlConnection(connectionString);
-            }
-            return this._connection;
+        {
+            return new MySqlConnection(ConfigurationManager.ConnectionStrings[_connectionStringName].ConnectionString);
         }
 
         public override ISqlBuilder CreateBuilder()

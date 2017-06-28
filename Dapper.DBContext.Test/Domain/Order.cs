@@ -69,6 +69,28 @@ namespace Dapper.DBContext.Test.Domain
        public string Code { get; private set; }
 
    }
+
+    /// <summary>
+    /// mysql 时间戳版本号测试
+    /// </summary>
+   public class temp_test :Entity<int>
+   {
+       public temp_test() { }
+       public temp_test(int id, string qName, int quantity, DateTime rowVersion)
+           : base(id)
+       {
+           this.QName = qName;
+           this.Quantity = quantity;
+           this.RowVersion = rowVersion;
+
+       }
+       public string QName { get; private set; }
+
+       public int Quantity { get; set; }
+
+       public DateTime RowVersion { get; set; }
+
+   }
    
     [Table("o2o_customer")]
    public class CustomerEntity : IEntity

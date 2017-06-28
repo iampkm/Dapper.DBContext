@@ -9,6 +9,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Xml;
 using Dapper.DBContext.Test.Domain;
 using Dapper;
+using MySql.Data.MySqlClient;
+using System.Configuration;
 namespace Dapper.DBContext.Test.Builder
 {
      [TestClass]
@@ -40,6 +42,21 @@ namespace Dapper.DBContext.Test.Builder
              conn.Close();
 
              Assert.AreEqual("tttt", "tttt");
+         }
+         [TestMethod]
+         public void TestTimespan_MySql()
+         {
+             var strConn = ConfigurationManager.ConnectionStrings["ebsdb"].ConnectionString;
+
+             DapperDBContext db = new DapperDBContext("ebsdb");
+             var model = db.Table.Find<temp_test>(1);
+
+             var version1 = model.RowVersion;
+             model.Quantity += 100;
+             db.Update(model);
+             db.SaveChange();
+              var model2 = db.Table.Find<temp_test>(1);
+              Assert.AreNotEqual(version1, model2.RowVersion);
          }
           [TestMethod]
          public void TestPrivatePeroperties()

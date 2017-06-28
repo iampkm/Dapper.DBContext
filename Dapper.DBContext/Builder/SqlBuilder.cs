@@ -52,9 +52,9 @@ namespace Dapper.DBContext.Builder
             var updateFields = string.Join(",", updateProperties.Select(name => this._dialectBuilder.GetColumn(name) + " = @" + name));
             var whereFields = string.Empty;
             var rowVersion = "";
-            if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" && p.PropertyType == typeof(byte[])))
+            if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" ))
             {
-                rowVersion = string.Format("and [RowVersion]=@RowVersion");
+                rowVersion = string.Format("and {0}=@RowVersion", this._dialectBuilder.GetColumn("RowVersion"));
             }
             whereFields = string.Format("where {0}=@{1} {2}", this._dialectBuilder.GetKey(modelType), this._dialectBuilder.GetKey(modelType, false), rowVersion);
             var sql = string.Format("update {0} set {1} {2}", table, updateFields, whereFields);
@@ -71,9 +71,9 @@ namespace Dapper.DBContext.Builder
             }
             string table = this._dialectBuilder.GetTable(modelType);
             var rowVersion = "";
-            if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" && p.PropertyType == typeof(byte[])))
+            if (ReflectionHelper.GetPropertyInfos(modelType).Exists(p => p.Name == "RowVersion" ))
             {
-                rowVersion = string.Format("and [RowVersion]=@RowVersion");
+                rowVersion = string.Format("and {0}=@RowVersion", this._dialectBuilder.GetColumn("RowVersion"));
             }
             var operate = "in";
             if (isOnlyOneId) { operate = "="; }

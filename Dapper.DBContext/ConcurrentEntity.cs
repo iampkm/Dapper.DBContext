@@ -23,7 +23,7 @@ namespace Dapper.DBContext
         public TKey Id { get; set; }
 
         /// <summary>
-        /// 版本乐观并发字段，无须开发显示设置值
+        /// 版本乐观并发字段，无须开发显示设置值, sqlserver: timestamp 用byte[] 接收，mysql 用datetime 接收
         /// </summary>
         public byte[] RowVersion { get; private set; }
 

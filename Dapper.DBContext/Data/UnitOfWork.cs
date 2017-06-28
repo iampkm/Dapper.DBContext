@@ -63,7 +63,8 @@ namespace Dapper.DBContext.Data
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                             
                                 break;
                         }
-                        if (executeResult <= 0) {
+                        if (executeResult <= 0)
+                        {
                             string parameters = ReflectionHelper.GetObjectPropertyValue(model.ParamObj);
                             throw new Exception(string.Format("sql exception:rows is zero.sql={0} , parameters={1}", model.Sql, parameters));
                         }
@@ -77,7 +78,7 @@ namespace Dapper.DBContext.Data
                     tran.Rollback();
                     this._sqlList.Clear();
                     throw ex;
-                    //throw new Exception(string.Format("sql exception.sql={0}.", executeSql), ex);
+                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
                 }
                 finally
                 {
@@ -123,7 +124,8 @@ namespace Dapper.DBContext.Data
                         }
                         if (executeResult <= 0)
                         {
-                            throw new Exception(string.Format("rows is zero.sql={0},parameters={1}", model.Sql, model.ParamObj.ToString()));
+                            string parameters = ReflectionHelper.GetObjectPropertyValue(model.ParamObj);
+                            throw new Exception(string.Format("sql exception:rows is zero.sql={0} , parameters={1}", model.Sql, parameters));
                         }
                     }
                     tran.Commit();
@@ -134,7 +136,8 @@ namespace Dapper.DBContext.Data
                 {
                     tran.Rollback();
                     this._sqlList.Clear();
-                    throw new Exception(string.Format("sql exception.sql={0}.", executeSql),ex);
+                    throw ex;
+                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
                 }
                 finally
                 {

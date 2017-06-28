@@ -84,7 +84,7 @@ namespace Dapper.DBContext.Helper
                 var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
                 if (attrs != null) { continue; }
                 //get rid of rowVersion
-                if (pi.Name == _defaultRowVersion && pi.PropertyType == typeof(byte[])) { continue; }
+                if (pi.Name == _defaultRowVersion ) { continue; }
                 // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
                 if (pi.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && pi.PropertyType == typeof(int)) { continue; }
                 // get rid of the aggragation collection object 
