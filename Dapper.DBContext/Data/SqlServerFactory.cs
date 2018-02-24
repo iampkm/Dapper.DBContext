@@ -24,7 +24,7 @@ namespace Dapper.DBContext.Data
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            return new JoinQueryBuilder(new DialectBuilder(this),new ExecuteQuery(this)); 
+            return new JoinQueryBuilder(new DialectBuilder(this), new ExecuteQuery(this));
         }
 
         public string WrapFormat
@@ -40,7 +40,7 @@ namespace Dapper.DBContext.Data
             //get { return "SELECT * FROM (SELECT ROW_NUMBER() OVER(ORDER BY {OrderBy}) AS PagedNumber, {SelectColumns} FROM {TableName} {WhereClause}) AS u WHERE PagedNUMBER BETWEEN (({PageNumber}-1) * {RowsPerPage} + 1) AND ({PageNumber} * {RowsPerPage})"; }
         }
 
-        public string IdentityFromat
+        public string IdentityFormat
         {
             get { return "SELECT SCOPE_IDENTITY()"; }
         }
@@ -58,6 +58,12 @@ namespace Dapper.DBContext.Data
         //    _getIdentitySql = string.Format("SELECT LAST_INSERT_ROWID() AS id");
         //    _getPagedListSql = "Select {SelectColumns} from {TableName} {WhereClause} Order By {OrderBy} LIMIT {RowsPerPage} OFFSET (({PageNumber}-1) * {RowsPerPage})";
         //    break;
-      
+
+
+
+        public string VariableFormat
+        {
+            get { return "@"; }
+        }
     }
 }

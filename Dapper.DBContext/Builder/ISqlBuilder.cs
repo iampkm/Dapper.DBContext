@@ -11,14 +11,17 @@ namespace Dapper.DBContext.Builder
     {
         string BuildInsert(Type modelType);
         string BuildUpdate(Type modelType);
+        string BuildUpdate<TEntity>(TEntity entity, Expression<Func<TEntity, bool>> where, out object argumnets);
+        string BuildUpdate<TEntity>(Expression<Func<TEntity, TEntity>> columns, Expression<Func<TEntity, bool>> where,out object argumnets);
         string BuildDelete(Type modelType, bool isOnlyOneId = true);
-
-        string buildDeleteByLamda<TEntity>(Expression<Func<TEntity, bool>> expression,out object arguments);
-        string buildSelectById<TEntity>(bool isOnlyOneId = true);
-        string buildSelect<TEntity>();
-        string buildSelect<TEntity>(string columns);
+        string BuildDeleteByLamda<TEntity>(Expression<Func<TEntity, bool>> expression,out object arguments);
+        string BuildSelectById<TEntity>(bool isOnlyOneId = true);
+        string BuildSelect<TEntity>();
+        string BuildSelect<TEntity>(string columns);
         string BuildSelectByLamda<TEntity>(Expression<Func<TEntity, bool>> expression, out object arguments, string columns = "");
         string BuildSelectByLamda<TEntity, TResult>(Expression<Func<TEntity, bool>> expression, out object arguments, Expression<Func<TEntity, TResult>> select,string function);
+
+        string BuildSelectByContext<TEntity>(QueryContext context, out object arguments);
 
     }
 }

@@ -47,7 +47,7 @@ namespace Dapper.DBContext
 
         private TEntity FindById<TEntity>(object Id) where TEntity : class
         {
-            string sql = this._builder.buildSelectById<TEntity>();
+            string sql = this._builder.BuildSelectById<TEntity>();
             var result = this._executeQuery.QuerySingle<TEntity>(sql, new { Id = Id });
             return result;
         }
@@ -68,7 +68,7 @@ namespace Dapper.DBContext
         public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
         {
            // return FindByIds<TEntity>(Ids);
-            string sql = this._builder.buildSelectById<TEntity>(false);
+            string sql = this._builder.BuildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
             return result;
         }
@@ -76,7 +76,7 @@ namespace Dapper.DBContext
         public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class
         {
            // return FindByIds<TEntity>(Ids);
-            string sql = this._builder.buildSelectById<TEntity>(false);
+            string sql = this._builder.BuildSelectById<TEntity>(false);
             var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
             return result;
         }
@@ -90,7 +90,7 @@ namespace Dapper.DBContext
 
         public IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class
         {
-            string sql = this._builder.buildSelect<TEntity>();
+            string sql = this._builder.BuildSelect<TEntity>();
             var result = this._executeQuery.Query<TEntity>(sql, null);
             return result;
         }
@@ -124,7 +124,7 @@ namespace Dapper.DBContext
         public int Count<TEntity>(string where, object param) where TEntity : class
         {
             if (string.IsNullOrEmpty(where)) { return Count<TEntity>(); }
-            string sql = string.Format("{0} where 1=1 {1}", _builder.buildSelect<TEntity>("count(*)"), where);
+            string sql = string.Format("{0} where 1=1 {1}", _builder.BuildSelect<TEntity>("count(*)"), where);
             var result = this._executeQuery.ExecuteScalar<int>(sql, param);
             return result;
         }
@@ -167,7 +167,7 @@ namespace Dapper.DBContext
         }
         private Task<TEntity> FindSingleAsync<TEntity>(object Id) where TEntity : class
         {
-            string sql = this._builder.buildSelectById<TEntity>();
+            string sql = this._builder.BuildSelectById<TEntity>();
             var result = this._executeQuery.QuerySingleAsync<TEntity>(sql, Id);
             return result;
         }
@@ -196,14 +196,14 @@ namespace Dapper.DBContext
 
         private Task<IEnumerable<TEntity>> FindByIdsAsync<TEntity>(object Ids) where TEntity : class
         {
-            string sql = this._builder.buildSelectById<TEntity>(false);
+            string sql = this._builder.BuildSelectById<TEntity>(false);
             var result = this._executeQuery.QueryAsync<TEntity>(sql, Ids);
             return result;
         }
 
         public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>() where TEntity : class
         {
-            string sql = this._builder.buildSelect<TEntity>();
+            string sql = this._builder.BuildSelect<TEntity>();
             var result = this._executeQuery.QueryAsync<TEntity>(sql, null);
             return result;
         }
@@ -240,7 +240,7 @@ namespace Dapper.DBContext
         public Task<int> CountAsync<TEntity>(string where, object param) where TEntity : class
         {
             if (string.IsNullOrEmpty(where)) { return CountAsync<TEntity>(); }
-            string sql = string.Format("{0} where  1=1  {1}", _builder.buildSelect<TEntity>("count(*)"), where);
+            string sql = string.Format("{0} where  1=1  {1}", _builder.BuildSelect<TEntity>("count(*)"), where);
             var result = this._executeQuery.ExecuteScalarAsync<int>(sql, param);
             return result;
         }

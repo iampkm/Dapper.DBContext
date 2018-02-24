@@ -22,13 +22,13 @@ namespace Dapper.DBContext
         IConnectionFactory _connectionFactory;
         IExecute _command;
 
-        public DapperDBContext(string connectionStringName)
-        {
-            _connectionFactory = IConnectionFactory.Create(connectionStringName);
 
+        public DapperDBContext(string connectionStringName)
+        {            
+            _connectionFactory = IConnectionFactory.Create(connectionStringName);
             this._iquery = new QueryService(connectionStringName);
             this._uow = new UnitOfWork(this._connectionFactory);
-            this._builder = this._connectionFactory.CreateBuilder();
+            _builder = _connectionFactory.CreateBuilder();
             this._command = new ExecuteService(this._connectionFactory, this._uow);
         }
 
@@ -42,7 +42,7 @@ namespace Dapper.DBContext
             // 子类的外键名，必须是 父类名+默认ID名；
             string parentIdName = string.Format("{0}{1}", model.GetType().Name, ReflectionHelper.GetKeyName(model.GetType()));
             string sql = this._builder.BuildInsert(model.GetType());         
-            if (ReflectionHelper.isIdentity(model.GetType()))
+            if (ReflectionHelper.ExistsAutoIncrementKey(model.GetType()))
             {
                 this._uow.Add(sql, model, InsertMethodEnum.Parent, parentIdName);
             }
@@ -67,7 +67,7 @@ namespace Dapper.DBContext
                     }
                 }
                 var childSql = this._builder.BuildInsert(childObjItemType);
-                if (ReflectionHelper.isIdentity(model.GetType()))
+                if (ReflectionHelper.ExistsAutoIncrementKey(model.GetType()))
                 {
                     this._uow.Add(childSql, childObjItem, InsertMethodEnum.Child, parentIdName);
                 }
@@ -79,7 +79,7 @@ namespace Dapper.DBContext
 
         public void Insert<TEntity>(TEntity[] models) where TEntity : class
         {
-            if (models.Count() <= 0) throw new Exception("models is empty");
+            if (models.Count() <= 0) return ;
             var model = models[0];
             string parentIdName = string.Format("{0}{1}", model.GetType().Name, ReflectionHelper.GetKeyName(model.GetType()));
             string sql = this._builder.BuildInsert(model.GetType());
@@ -96,7 +96,7 @@ namespace Dapper.DBContext
 
         public void Update<TEntity>(TEntity[] models) where TEntity : class
         {
-            if (models.Count() <= 0) throw new Exception("models is empty");
+            if (models.Count() <= 0) return;
             var model = models[0];
             string sql = this._builder.BuildUpdate(model.GetType());
 
@@ -112,7 +112,7 @@ namespace Dapper.DBContext
 
         public void Delete<TEntity>(TEntity[] models) where TEntity : class
         {
-            if (models.Count() <= 0) throw new Exception("models is empty");
+            if (models.Count() <= 0) return;
             var model = models[0];
             string sql = this._builder.BuildDelete(model.GetType());
             this._uow.Add(sql, model);
@@ -136,7 +136,7 @@ namespace Dapper.DBContext
         {
             if (expression == null) throw new Exception("参数不能为空");
              object args = new object();
-             string sql = this._builder.buildDeleteByLamda<TEntity>(expression, out args);
+             string sql = this._builder.BuildDeleteByLamda<TEntity>(expression, out args);
              this._uow.Add(sql, args);
         }
 

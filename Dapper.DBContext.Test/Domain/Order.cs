@@ -7,15 +7,17 @@ using Dapper.DBContext;
 using Dapper.DBContext.Schema;
 namespace Dapper.DBContext.Test.Domain
 {
+    /// <summary>
+    ///  普通类，类中聚合了 1：N 子对象 和 1：1 对象
+    /// </summary>
    public class Order :Entity<int>
     {
 
        public Order() {
            this.Items = new List<OrderItem>();
+           this.addressList = new List<Address>();
        }
-       public string Code { get; set; }
-
-       public Address Address { get; set; }
+       public string Code { get; set; }       
 
        public OrderState Status { get; set; }
 
@@ -23,7 +25,14 @@ namespace Dapper.DBContext.Test.Domain
 
        public int CreateBy { get; set; }
 
+       /// <summary>
+       ///  外键1 ：1 
+       /// </summary>
+       public Address Address { get; set; }
+
        public virtual IList<OrderItem> Items { get; set; }
+
+       public virtual List<Address> addressList { get; set; }
       
     }
 
@@ -42,6 +51,8 @@ namespace Dapper.DBContext.Test.Domain
 
    }
 
+
+
    public class Address
    {
        public Address(string city, string area)
@@ -49,6 +60,8 @@ namespace Dapper.DBContext.Test.Domain
            this.City = city;
            this.Area = area;
        }
+       [Key]
+       public int OrderId { get; set; }
        public string City { get; set; }
 
        public string Area { get; set; }
@@ -58,11 +71,15 @@ namespace Dapper.DBContext.Test.Domain
    { 
        WaitPay = 1 ,Paid =2
    }
-
-   public class tb_time :ConcurrentEntity<int>
+   
+    /// <summary>
+    ///  sql  行版本测试类, 模拟表，order
+    /// </summary>
+     [Table("Order")]
+   public class SqlRowVersion_Test :ConcurrentEntity<int>
    {
-       public tb_time() { }
-       public tb_time(int id, string code):base(id)
+       public SqlRowVersion_Test() { }
+       public SqlRowVersion_Test(int id, string code):base(id)
        {          
            this.Code = code;        
        }

@@ -30,6 +30,7 @@ namespace Dapper.DBContext
         IEnumerable<TEntity> FindAll<TEntity>(string sql, object param) where TEntity : class;
         bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class;
         int Count<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
+        [Obsolete("该重载已经废弃")]
         int Count<TEntity>(string where, object param) where TEntity : class;
         TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class;
         /// <summary>

@@ -10,7 +10,6 @@ namespace Dapper.DBContext.Builder
     public class DialectBuilder : IDialectBuilder
     {
         IDataBaseDialect _dialect;
-
         public DialectBuilder(IDataBaseDialect dialect)
         {
             this._dialect = dialect;
@@ -22,45 +21,32 @@ namespace Dapper.DBContext.Builder
             {
                return this._dialect;
             }
-        }     
+        }       
 
         public string GetKey(Type modelType, bool isWrapDialect = true)
         {
             string key = ReflectionHelper.GetKeyName(modelType);
-            if (isWrapDialect)
-            {
-                key = string.Format(this._dialect.WrapFormat, key);
-            }
-            return key;
+            return isWrapDialect ? string.Format(this._dialect.WrapFormat, key) : key;
         }
 
         public string GetForeignKey(Type modelType, bool isWrapDialect = true)
         {
             string foreignKey = ReflectionHelper.GetTableName(modelType) + ReflectionHelper.GetKeyName(modelType);
-            if (isWrapDialect)
-            {
-                foreignKey = string.Format(this._dialect.WrapFormat, foreignKey);
-            }
-            return foreignKey;
+            return isWrapDialect ? string.Format(this._dialect.WrapFormat, foreignKey) : foreignKey;            
         }
 
         public string GetTable(Type modelType, bool isWrapDialect = true)
         {
             string table = ReflectionHelper.GetTableName(modelType);
-            if (isWrapDialect)
-            {
-                table = string.Format(this._dialect.WrapFormat, table);
-            }
-            return table;
+            return isWrapDialect ? string.Format(this._dialect.WrapFormat, table) : table;
         }
 
         public string GetColumn(string columnName, bool isWrapDialect = true)
         {
-            if (isWrapDialect)
-            {
-                columnName = string.Format(this._dialect.WrapFormat, columnName);
-            }
-            return columnName;
+            return isWrapDialect ? string.Format(this._dialect.WrapFormat, columnName) : columnName;            
         }
+
+
+       
     }
 }

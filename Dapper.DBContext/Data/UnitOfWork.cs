@@ -16,7 +16,6 @@ namespace Dapper.DBContext.Data
     {
         List<SqlArgument> _sqlList = new List<SqlArgument>();
         private Dictionary<string, object> _ParentKeyDic;
-       // string _connectionStringName;
         IConnectionFactory _connectionFactory;
         public UnitOfWork(IConnectionFactory connectionFactory)
         {
@@ -32,6 +31,7 @@ namespace Dapper.DBContext.Data
         public void Commit()
         {
             string executeSql = "";
+            object exceuteObject = null;
             int executeResult = 0;
             using (IDbConnection conn = this._connectionFactory.CreateConnection())
             {
@@ -42,6 +42,7 @@ namespace Dapper.DBContext.Data
                     foreach (SqlArgument model in _sqlList)
                     {
                         executeSql = model.Sql;
+                        exceuteObject = model.ParamObj;
                         print(executeSql);
                         switch (model.InsertMethod)
                         {
@@ -51,37 +52,32 @@ namespace Dapper.DBContext.Data
                                 {
                                     _ParentKeyDic.Add(model.ParentIdName, executeResult);
                                 }
+                                // 设置主键自增ID 值
+                                ReflectionHelper.SetPrimaryKey(model.ParamObj, executeResult);
                                 break;
-                            case InsertMethodEnum.Child:                               
+                            case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
+                                    ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
                                 }
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
-                            default:                                
-                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                             
+                            default:
+                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
-                        }
-                        if (executeResult <= 0)
-                        {
-                            string parameters = ReflectionHelper.GetObjectPropertyValue(model.ParamObj);
-                            throw new Exception(string.Format("sql exception:rows is zero.sql={0} , parameters={1}", model.Sql, parameters));
                         }
                     }
                     tran.Commit();
-                    this._sqlList.Clear();
-                    this._ParentKeyDic.Clear();
                 }
                 catch (Exception ex)
-                {     
+                {
                     tran.Rollback();
-                    this._sqlList.Clear();
-                    throw ex;
-                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
+                    throw new Exception(string.Format("sql exception.sql={0}.\r\n paramObject={1}", executeSql, ReflectionHelper.Serialize(exceuteObject)), ex);
                 }
                 finally
                 {
+                    this._sqlList.Clear();
+                    this._ParentKeyDic.Clear();
                     conn.Close();
                 }
             }
@@ -91,6 +87,7 @@ namespace Dapper.DBContext.Data
         public void CommitAsync()
         {
             string executeSql = "";
+            object exceuteObject = null;
             int executeResult = 0;
             using (IDbConnection conn = this._connectionFactory.CreateConnection())
             {
@@ -101,6 +98,7 @@ namespace Dapper.DBContext.Data
                     foreach (SqlArgument model in _sqlList)
                     {
                         executeSql = model.Sql;
+                        exceuteObject = model.ParamObj;
                         print(executeSql);
                         switch (model.InsertMethod)
                         {
@@ -110,11 +108,13 @@ namespace Dapper.DBContext.Data
                                 {
                                     _ParentKeyDic.Add(model.ParentIdName, executeResult);
                                 }
+                                ReflectionHelper.SetPrimaryKey(model.ParamObj, executeResult);
                                 break;
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
+                                    // executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
+                                    ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
                                 }
                                 executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
                                 break;
@@ -122,25 +122,19 @@ namespace Dapper.DBContext.Data
                                 executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
                                 break;
                         }
-                        if (executeResult <= 0)
-                        {
-                            string parameters = ReflectionHelper.GetObjectPropertyValue(model.ParamObj);
-                            throw new Exception(string.Format("sql exception:rows is zero.sql={0} , parameters={1}", model.Sql, parameters));
-                        }
                     }
                     tran.Commit();
-                    this._sqlList.Clear();
-                    this._ParentKeyDic.Clear();
                 }
                 catch (Exception ex)
                 {
                     tran.Rollback();
                     this._sqlList.Clear();
-                    throw ex;
-                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
+                    throw new Exception(string.Format("sql exception.sql={0}.\r\n paramObject={1}", executeSql, ReflectionHelper.Serialize(exceuteObject)), ex);
                 }
                 finally
                 {
+                    this._sqlList.Clear();
+                    this._ParentKeyDic.Clear();
                     conn.Close();
                 }
             }

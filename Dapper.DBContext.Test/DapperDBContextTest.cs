@@ -36,6 +36,7 @@ namespace Dapper.DBContext.Test
                 Quantity = 10
             };
             model.Items.Add(item);
+            model.addressList.Add(new Address("city", "area") );
 
             _db.Insert<Order>(model);
             _db.SaveChange();

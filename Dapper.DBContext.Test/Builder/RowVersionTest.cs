@@ -26,7 +26,7 @@ namespace Dapper.DBContext.Test.Builder
 
            
              DataRow row = dt.Rows[0];
-             tb_time model = new tb_time((int)row[0], (string)row[1]);
+             SqlRowVersion_Test model = new SqlRowVersion_Test((int)row[0], (string)row[1]);
              //model.Id = (int)row[0];
              //model.Code = (string)row[1];
            //  model.RowVersion = (byte[])row[2];
@@ -62,7 +62,7 @@ namespace Dapper.DBContext.Test.Builder
          public void TestPrivatePeroperties()
          {
              IDbConnection conn = new SqlConnection("server=.;uid=sa;pwd=123456;database=temp2");
-             var model= conn.Query<tb_time>("select top 1 * from tb_time").FirstOrDefault();
+             var model= conn.Query<SqlRowVersion_Test>("select top 1 * from tb_time").FirstOrDefault();
              Assert.AreEqual(1, model.Id);
              Assert.AreEqual("tttt", model.Code);
             // Assert.AreEqual(1, model.Id);

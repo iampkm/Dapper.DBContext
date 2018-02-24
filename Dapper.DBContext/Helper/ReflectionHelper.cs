@@ -11,156 +11,324 @@ namespace Dapper.DBContext.Helper
 {
     public class ReflectionHelper
     {
-        private static readonly ConcurrentDictionary<Type, List<PropertyInfo>> _paramCache = new ConcurrentDictionary<Type, List<PropertyInfo>>();
-        private static string _defaultKey = "Id";
-        private static string _defaultRowVersion = "RowVersion";
-        public static List<PropertyInfo> GetPropertyInfos(object obj)
+        static readonly ConcurrentDictionary<Type, List<PropertyInfo>> _entityCache = new ConcurrentDictionary<Type, List<PropertyInfo>>();
+        static string _defaultKey;
+        static string _defaultRowVersion;
+        static ReflectionHelper()
         {
-            if (obj == null)
-            {
-                return new List<PropertyInfo>();
-            }
-            return GetPropertyInfos(obj.GetType());
+            _defaultKey = Settings.PrimaryKey;
+            _defaultRowVersion = Settings.Timestamp;
         }
 
+        /// <summary>
+        /// 获取实体属性列，包含所有外键关系对象
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static List<PropertyInfo> GetPropertyInfos(Type type)
         {
             List<PropertyInfo> properties = new List<PropertyInfo>();
-            if (_paramCache.TryGetValue(type, out properties)) return properties.ToList();
+            if (_entityCache.TryGetValue(type, out properties)) return properties.ToList();
             properties = type.GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public).ToList();
-            _paramCache[type] = properties;
+            _entityCache[type] = properties;
             return properties;
         }
 
-        public static string GetTableName(Type modelType)
+        public static string GetTableName(Type entityType)
         {
-            var table = modelType.GetCustomAttributes(true).SingleOrDefault(attr => attr.GetType().Name == typeof(TableAttribute).Name) as dynamic;
-            if (table != null)
-            {
-                return table.Name;
-            }
-            return modelType.Name;
+            var attr = entityType.GetCustomAttribute<TableAttribute>();        
+            return attr == null ? entityType.Name : attr.Name;            
         }
 
-        public static string GetKeyName(Type modelType)
+        public static string GetKeyName(Type entityType)
         {
-            var properties = GetPropertyInfos(modelType);
-            var key = properties.Where(p => p.GetCustomAttributes(true).Any(attr => attr.GetType().Name == typeof(KeyAttribute).Name)).FirstOrDefault();
-            if (key != null)
-            {
-                return key.Name;
-            }
-            return _defaultKey;
+            var column = GetKeyColumn(entityType);
+            return column == null ? "" : column.Name;
+        }
+
+        public static string GetColumnName(PropertyInfo property)
+        {
+            var attr = property.GetCustomAttribute<ColumnAttribute>();
+            return attr == null ? property.Name : attr.Name;
         }
         /// <summary>
-        /// 判断对象中是否有自增主键
+        /// 返回属性名对应的列名，属性不属于表，将抛出异常
         /// </summary>
-        /// <param name="modelType"></param>
+        /// <param name="propertyName"></param>
+        /// <param name="entityType"></param>
         /// <returns></returns>
-        public static bool isIdentity(Type modelType)
+        public static string GetColumnName(string propertyName, Type entityType)
+        { 
+            var properties = GetTableColumns(entityType);
+            var column = properties.Where(pi => pi.Name.Equals(propertyName, StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+            if (column == null) { throw new Exception(string.Format("属性{0}不能映射到表", propertyName)); }
+            return GetColumnName(column);
+        }
+              
+
+        /// <summary>
+        /// 判断实体中是否有自增主键
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static bool ExistsAutoIncrementKey(Type entityType)
         {
-            bool result = false;
-            var properties = GetPropertyInfos(modelType);
-            var key = properties.Where(p => p.GetCustomAttributes(true).Any(attr => attr.GetType().Name == typeof(KeyAttribute).Name)).FirstOrDefault();
-            if (key != null)
-            {
-                if (key.GetType() == typeof(int)) { result = true; }
-            }
-            var keyPoperties = properties.Where(n => n.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && n.PropertyType == typeof(int)).FirstOrDefault();
-            if (keyPoperties != null)
-            {
-                result = true;
-            }
-            return result;
+            var properties = GetPropertyInfos(entityType);
+            return properties.Exists(pi => IsKeyAndAutoIncrement(pi));            
+        }
+        /// <summary>
+        ///  判断是否主键，且为自增长
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static bool IsKeyAndAutoIncrement(PropertyInfo property)
+        {
+             var keyAttr= property.GetCustomAttribute<KeyAttribute>();
+             if (keyAttr == null)
+             {
+                 return (property.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase)&& IsInteger(property.PropertyType));
+             }
+             else
+             {
+                 return (keyAttr.AutoIncrement && IsInteger(property.PropertyType));
+             }
+        }
+        /// <summary>
+        ///  获取自增主键列
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static PropertyInfo GetAutoIncrementColumn(Type entityType)
+        {
+            var properties = GetPropertyInfos(entityType);
+            var column= properties.FirstOrDefault(pi => IsKeyAndAutoIncrement(pi));
+            return column;
+        }
+        /// <summary>
+        /// 根据名字查找列
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <param name="columnName"></param>
+        /// <returns></returns>
+        public static PropertyInfo GetColumn(Type entityType, string columnName)
+        {
+            var properties = GetPropertyInfos(entityType);
+            var column = properties.FirstOrDefault(pi => pi.Name.Equals(columnName, StringComparison.OrdinalIgnoreCase)&&pi.PropertyType.IsSimpleType());
+            return column;
         }
 
-
-        public static List<string> GetBuildSqlProperties(Type typeModel)
+        /// <summary>
+        /// Is Primary key 
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static bool IsKeyColumn(PropertyInfo property)
         {
-            var propertieInfos = GetPropertyInfos(typeModel);
+            var keyAttr = property.GetCustomAttribute<KeyAttribute>();
+            // has keyAttribute       keyName = default setting 
+            return (keyAttr != null || property.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase));            
+        }
+
+        public static PropertyInfo GetKeyColumn(Type entityType)
+        {
+            var properties = GetPropertyInfos(entityType);
+            var column = properties.FirstOrDefault(pi => IsKeyColumn(pi));
+            return column;
+        }
+
+        /// <summary>
+        /// 是否为不需要映射到数据库列
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static bool IsNotMappedColumn(PropertyInfo property)
+        {
+            var attr= property.GetCustomAttribute<NotMappedAttribute>();
+            return attr != null;          
+        }
+
+        public static bool IsForeignColumn(PropertyInfo property)
+        {          
+            // 1:N
+            if (property.PropertyType.IsGenericType && property.PropertyType.GetGenericArguments()[0].IsClass 
+                && property.PropertyType.GetGenericArguments()[0] != typeof(string)) {
+                    return true;
+            }
+            // 1:1
+            if (property.GetGetMethod().IsVirtual && property.PropertyType.IsClass && property.PropertyType != typeof(string))
+            {
+                return true;
+            }
+            return false;
+        }
+        /// <summary>
+        ///  是否为并发行版本列
+        /// </summary>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static bool IsRowVersionColumn(PropertyInfo property)
+        {
+            return property.Name.Equals(_defaultRowVersion, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool ExistsRowVersion(Type entityType)
+        { 
+            return GetPropertyInfos(entityType).Exists(pi => IsRowVersionColumn(pi));
+        }
+
+        /// <summary>
+        /// 类型字段是否整型
+        /// </summary>
+        /// <param name="fieldType"></param>
+        /// <returns></returns>
+        private static bool IsInteger(Type fieldType)
+        {
+            return (fieldType == typeof(int) || fieldType == typeof(long));            
+        }
+
+        /// <summary>
+        ///  获取构建Insert，Update，sql语句 的实体列名
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static List<string> GetBuildSqlProperties(Type entityType)
+        {
+            var propertieInfos = GetPropertyInfos(entityType);
             var properties = new List<string>();
             foreach (PropertyInfo pi in propertieInfos)
-            {
-                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
-                if (attrs != null) { continue; }
+            {               
+                if (IsNotMappedColumn(pi)) { continue; }
                 //get rid of rowVersion
-                if (pi.Name == _defaultRowVersion ) { continue; }
-                // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
-                if (pi.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && pi.PropertyType == typeof(int)) { continue; }
-                // get rid of the aggragation collection object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass && pi.PropertyType.GetGenericArguments()[0] != typeof(string)) { continue; }
-                if (pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
-                {
-                    continue;
+                if (IsRowVersionColumn(pi)) { continue; }
+                // get rid of identity key. 
+                if (IsKeyAndAutoIncrement(pi)) { continue; }
+
+                if (pi.PropertyType.IsSimpleType()) {
+                   properties.Add(GetColumnName(pi)); // 启用自定义列名
+                   // properties.Add(pi.Name);  //实体名和列名一致
                 }
-                // find value object
-                if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
-                {
-                    properties.AddRange(GetBuildSqlProperties(pi.PropertyType));
-                    continue;
-                }
-                properties.Add(pi.Name);
             }
             return properties;
         }
 
-        public static List<string> GetSelectSqlProperties(Type typeModel)
+        public static List<string> GetSelectSqlProperties(Type entityType)
         {
-            var propertieInfos = GetPropertyInfos(typeModel);
-            var properties = new List<string>();
+            //var propertieInfos = GetPropertyInfos(entityType);
+            //var properties = new List<string>();
+            //foreach (PropertyInfo pi in propertieInfos)
+            //{
+            //    if (IsNotMappedColumn(pi)) { continue; }
+            //    if (pi.PropertyType.IsSimpleType())
+            //    {
+            //        properties.Add(GetColumnName(pi)); // 启用自定义列名
+            //       // properties.Add(pi.Name);  //实体名和列名一致
+            //    }
+            //}
+            //return properties;
+            var propertieInfos = GetTableColumns(entityType);
+            return propertieInfos.Select(pi => GetColumnName(pi)).ToList();
+
+        }
+        /// <summary>
+        ///  获取实体与数据表对应的列属性
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static List<PropertyInfo> GetTableColumns(Type entityType)
+        {
+            var propertieInfos = GetPropertyInfos(entityType);
+            var properties = new List<PropertyInfo>();
             foreach (PropertyInfo pi in propertieInfos)
             {
-                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name);
-                if (attrs != null) { continue; }
-                // get rid of the foreign key object 
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass && pi.PropertyType.GetGenericArguments()[0] != typeof(string)) { continue; }
-                if (pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
+                if (IsNotMappedColumn(pi)) { continue; }
+                if (pi.PropertyType.IsSimpleType())
                 {
-                    continue;
+                    properties.Add(pi);                   
                 }
-                // value object
-                if (pi.PropertyType.IsClass && pi.PropertyType != typeof(string) && pi.PropertyType != typeof(byte[]))
+            }
+            return properties;
+        }
+        /// <summary>
+        /// 返回update set 字段
+        /// </summary>
+        /// <param name="entityType"></param>
+        /// <returns></returns>
+        public static List<PropertyInfo> GetUpdateColumns(Type entityType)
+        {
+            var propertieInfos = GetPropertyInfos(entityType);
+            var properties = new List<PropertyInfo>();
+            foreach (PropertyInfo pi in propertieInfos)
+            {
+                if (IsNotMappedColumn(pi)) { continue; }
+                if (IsRowVersionColumn(pi)) { continue; }
+                // get rid of primary key.
+                if (IsKeyColumn(pi)) continue;
+                if (pi.PropertyType.IsSimpleType())
                 {
-                    properties.AddRange(GetSelectSqlProperties(pi.PropertyType));
-                    continue;
+                    properties.Add(pi);
                 }
-                properties.Add(pi.Name);
             }
             return properties;
         }
 
-        public static List<object> GetForeignObject<T>(T model)
+        public static List<object> GetForeignObject<T>(T entity)
         {
             List<object> childObjects = new List<object>();
-            var propertieInfos = GetPropertyInfos(model);
+            var propertieInfos = GetPropertyInfos(entity.GetType());
             foreach (var pi in propertieInfos)
             {
-                if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass && pi.GetGetMethod().IsVirtual)
+                if (IsForeignColumn(pi))
                 {
-                    object childLists = pi.GetValue(model, null);
+                    object childLists = pi.GetValue(entity, null);
                     childObjects.Add(childLists);
                 }
             }
             return childObjects;
         }
 
-        public static string GetObjectPropertyValue(object model)
+        /// <summary>
+        ///  序列化对象属性和值
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public static string Serialize(object entity)
         {
 
-            var propInfos = GetPropertyInfos(model.GetType());
+            var propInfos = GetPropertyInfos(entity.GetType());
             string keyValue = "";
             if (propInfos.Count == 0)
             {
-               keyValue= model.ToString();
+                keyValue = entity.ToString();
             }
             foreach (var pi in propInfos)
             {
                 object value = new object();
                 if (pi == null) value = string.Empty;
-                value = pi.GetValue(model, null);
-                keyValue += string.Format("{0} : {1} ;", pi.Name, value);
+                value = pi.GetValue(entity, null);
+                keyValue += string.Format("{0} : {1},", pi.Name, value);
             }
             return keyValue;
+        }
+
+        /// <summary>
+        /// 给实体自增主键赋值
+        /// </summary>
+        /// <param name="entity"></param>
+        public static void SetPrimaryKey(object entity, object value)
+        {
+            var Id = GetAutoIncrementColumn(entity.GetType());
+            if (Id != null)
+            {
+                Id.SetValue(entity, value);
+            }
+        }
+
+        public static void SetForeignKey(object entity,string foreignKeyName, object value)
+        {
+            var column = GetColumn(entity.GetType(), foreignKeyName);
+            if (column != null) {
+                column.SetValue(entity, value);
+            }
         }
 
 

@@ -22,7 +22,7 @@ namespace Dapper.DBContext.Data
             get { return "Select {SelectColumns} from {TableName} {TableAlias} {JoinClause} where 1=1 {WhereClause} Order By  {TableAlias}.{OrderBy} LIMIT {Offset},{PageSize}"; }
         }
 
-        public string IdentityFromat
+        public string IdentityFormat
         {
             get { return "SELECT LAST_INSERT_ID()"; }
         }
@@ -39,7 +39,14 @@ namespace Dapper.DBContext.Data
 
         public override IJoinQuery CreateJoinBuilder()
         {
-            return new JoinQueryBuilder( new DialectBuilder(this), new ExecuteQuery(this)); 
+            return new JoinQueryBuilder(new DialectBuilder(this), new ExecuteQuery(this));
         }
+
+
+        public string VariableFormat
+        {
+            get { return "@"; }
+        }
+       
     }
 }

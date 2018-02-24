@@ -89,7 +89,7 @@ namespace Dapper.DBContext.Data
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("sql 异常", ex);
             }
             finally {
                 this._connection.Close();

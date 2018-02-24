@@ -30,12 +30,33 @@ namespace Dapper.DBContext.Data
             }
             catch (Exception ex)
             {
-                throw ex;
+                throw new Exception("sql 异常",ex);
             }
             finally {
                 this._connection.Close();
             }
            
+            return result;
+        }
+        public T ExecuteScalar<T>(string sql, object param)
+        {
+            var result = default(T);
+            try
+            {
+                this._connection = this._connectionFactory.CreateConnection();
+                this._connection.Open();
+                print(sql);
+                result = this._connection.ExecuteScalar<T>(sql, param);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            finally
+            {
+                this._connection.Close();
+            }
+
             return result;
         }
 

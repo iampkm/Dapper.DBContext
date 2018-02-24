@@ -15,6 +15,14 @@ namespace Dapper.DBContext.Data
         /// <returns></returns>
         int Execute(string sql, object param = null,int? commandTimeout = null);
         /// <summary>
+        /// 执行，返回一行一列值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="sql"></param>
+        /// <param name="param"></param>
+        /// <returns></returns>
+        T ExecuteScalar<T>(string sql, object param = null);
+        /// <summary>
         /// 加入工作单元，纳入事务执行
         /// </summary>
         /// <param name="sql"></param>
