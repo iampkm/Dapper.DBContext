@@ -15,7 +15,7 @@ namespace Dapper.DBContext.Test.Domain
 
        public Order() {
            this.Items = new List<OrderItem>();
-           this.addressList = new List<Address>();
+          // this.addressList = new List<Address>();
        }
        public string Code { get; set; }       
 
@@ -26,18 +26,19 @@ namespace Dapper.DBContext.Test.Domain
        public int CreateBy { get; set; }
 
        /// <summary>
-       ///  外键1 ：1 
+       ///  外键 1 ：1 
        /// </summary>
-       public Address Address { get; set; }
+      // public Address Address { get; set; }
 
        public virtual IList<OrderItem> Items { get; set; }
 
-       public virtual List<Address> addressList { get; set; }
+      // public virtual List<Address> addressList { get; set; }
       
     }
 
-   public class OrderItem : Entity<int>
+   public class OrderItem // : Entity<int>
    {
+       public int Id { get; set; }
       public int OrderId { get; set; }
 
       public int ProductId { get; set; }

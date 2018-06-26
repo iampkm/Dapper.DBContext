@@ -40,6 +40,25 @@ namespace Dapper.DBContext.Test.Helper
             Assert.AreEqual(expected, actual);
             Assert.AreEqual("No123", args["@P0"]);
         }
+
+        [TestMethod]
+        public void Build_One_PropieteSame()
+        {
+            //Arrange
+           // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Order model = new Order();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == model.Code;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] = @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("No123", args["@P0"]);
+        }
+
         [TestMethod]
         public void Build_One_variable()
         {

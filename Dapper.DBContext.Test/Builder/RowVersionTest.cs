@@ -49,13 +49,13 @@ namespace Dapper.DBContext.Test.Builder
              var strConn = ConfigurationManager.ConnectionStrings["ebsdb"].ConnectionString;
 
              DapperDBContext db = new DapperDBContext("ebsdb");
-             var model = db.Table.Find<temp_test>(1);
+             var model = db.Table<temp_test>().FirstOrDefault(n=>n.Id == 1);
 
              var version1 = model.RowVersion;
              model.Quantity += 100;
              db.Update(model);
              db.SaveChange();
-              var model2 = db.Table.Find<temp_test>(1);
+             var model2 = db.Table<temp_test>().FirstOrDefault(n => n.Id == 1);
               Assert.AreNotEqual(version1, model2.RowVersion);
          }
           [TestMethod]

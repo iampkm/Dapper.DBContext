@@ -25,6 +25,8 @@ namespace Dapper.DBContext.Builder
             this.IsLimit = false;
         }
 
+        public Type EntityType { get; set; }
+
         public List<QueryNode> Nodes { get; set; }
         public int PageIndex { get; private set; }
         public int PageSize { get; private set; }

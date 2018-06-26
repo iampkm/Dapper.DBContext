@@ -24,5 +24,7 @@ namespace Dapper.DBContext
        ///  时间戳并发控制字段。 默认数据库列名值："RowVersion". C#实体类属性： sqlserver 用byte[] 类型，mysql 用datetime 类型
        /// </summary>
        public static string Timestamp { get; set; }
+
+       public static string ForeignKeyFormat = "{0}{1}";
     }
 }

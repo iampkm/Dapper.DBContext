@@ -14,10 +14,10 @@ namespace Dapper.DBContext
         public static IDBContext Create()
         {
             string masterConnectionString = "";
-            string readConnectionString = "";
+          //  string readConnectionString = "";
             IConnectionFactory commandConnection = IConnectionFactory.Create(masterConnectionString);
-            IConnectionFactory queryConnection = IConnectionFactory.Create(masterConnectionString);          
-            IQuery query = new QueryService(readConnectionString);
+          //  IConnectionFactory queryConnection = IConnectionFactory.Create(masterConnectionString);          
+           // IQuery query = new QueryService(readConnectionString);
             IDBContext db = new DapperDBContext(masterConnectionString);
             return db;
         }

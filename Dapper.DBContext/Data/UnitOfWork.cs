@@ -31,8 +31,7 @@ namespace Dapper.DBContext.Data
         public void Commit()
         {
             string executeSql = "";
-            object exceuteObject = null;
-            int executeResult = 0;
+            object exceuteObject = null;          
             using (IDbConnection conn = this._connectionFactory.CreateConnection())
             {
                 conn.Open();
@@ -41,6 +40,7 @@ namespace Dapper.DBContext.Data
                 {
                     foreach (SqlArgument model in _sqlList)
                     {
+                        int executeResult = 0;
                         executeSql = model.Sql;
                         exceuteObject = model.ParamObj;
                         print(executeSql);
@@ -58,13 +58,20 @@ namespace Dapper.DBContext.Data
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
+                                    //ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
+                                    model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
                                 }
-                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
+                                print(model.Sql);
+                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                               
                                 break;
                             default:
+                                // 实体不包含自增Id
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
+                        }                        
+                        if (executeResult <= 0)
+                        {
+                            throw new Exception("sql exception:rows is zero");
                         }
                     }
                     tran.Commit();
@@ -113,14 +120,18 @@ namespace Dapper.DBContext.Data
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    // executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
-                                    ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
+                                     executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
+                                   // ReflectionHelper.SetForeignKey(model.ParamObj, model.ParentIdName, _ParentKeyDic[model.ParentIdName]);
                                 }
                                 executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
                                 break;
                             default:
                                 executeResult = conn.ExecuteAsync(model.Sql, model.ParamObj, tran).Result;
                                 break;
+                        } 
+                        if (executeResult <= 0)
+                        {
+                            throw new Exception("sql exception:rows is zero");
                         }
                     }
                     tran.Commit();

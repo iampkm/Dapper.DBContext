@@ -316,6 +316,25 @@ namespace Dapper.DBContext.Helper
         /// <param name="entity"></param>
         public static void SetPrimaryKey(object entity, object value)
         {
+            var entityType = entity.GetType();
+            // 集合对象
+            if (entityType.IsGenericType)
+            {
+                var entityList = entity as System.Collections.IEnumerable;
+                var entityItem = entityList.GetEnumerator();
+                while(entityItem.MoveNext())
+                {
+                    SetPrimaryKeyForObject(entityItem.Current, value);
+                }
+            }
+            else {
+                // 单个类
+                SetPrimaryKeyForObject(entity, value);
+            }
+        }
+
+        private static void SetPrimaryKeyForObject(object entity, object value)
+        {
             var Id = GetAutoIncrementColumn(entity.GetType());
             if (Id != null)
             {

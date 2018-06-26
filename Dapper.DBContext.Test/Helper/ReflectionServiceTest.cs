@@ -165,6 +165,51 @@ namespace Dapper.DBContext.Test.Helper
             var expected = 100;
             Assert.AreEqual(expected, actual);
         }
+        [TestMethod]
+        public void SetPrimaryKey_Insert_Entity_List_then_Get_Id_Value()
+        {
+            //Arrange
+            IList<Entity_Parent_Test> entitys = new List<Entity_Parent_Test>();
+            for (var i=0;i<3;i++)
+            {
+                entitys.Add(new Entity_Parent_Test());
+            }
+            //Action
+            ReflectionHelper.SetPrimaryKey(entitys, 100);
+            foreach (var entity in entitys)
+            {
+                var actual = entity.Id;
+                // Assert
+                var expected = 100;
+                Assert.AreEqual(expected, actual);
+            }            
+        }
+        [TestMethod]
+        public void SetPrimaryKey_Insert_Entity_then_Not_Get_Id_Value()
+        {
+            //Arrange
+            Entity_Not_AutoInCreament_KeyAttribute_intType entity = new Entity_Not_AutoInCreament_KeyAttribute_intType();
+            //Action
+            ReflectionHelper.SetPrimaryKey(entity, 100);
+            var actual = entity.SysNo;
+            // Assert           
+            var expected = 0;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void SetPrimaryKey_Insert_Entity_then_Get_String_Id_Value()
+        {
+            //Arrange
+            Entity_Not_AutoInCreament_KeyAttribute_stringType entity = new Entity_Not_AutoInCreament_KeyAttribute_stringType();
+            //Action
+            ReflectionHelper.SetPrimaryKey(entity, 100);
+            var actual = entity.SysNo;
+            // Assert
+            Assert.IsNull(actual);
+           // var expected = null;
+           // Assert.AreEqual(expected, actual);
+        }
 
     }
 }

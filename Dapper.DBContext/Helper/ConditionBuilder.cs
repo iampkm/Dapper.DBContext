@@ -12,6 +12,7 @@ namespace Dapper.DBContext.Helper
         protected Stack<string> _convertElements;
         protected Dictionary<string, object> _args;
         IDialectBuilder _dialect;
+      
         public ConditionBuilder(IDialectBuilder dialect)
         {
             _dialect = dialect;
@@ -22,6 +23,10 @@ namespace Dapper.DBContext.Helper
 
         public string BuildWhere(Expression expression, out  Dictionary<string, object> arguments)
         {
+            this._entityType = expression.Type.GetGenericArguments().FirstOrDefault();  // 第一个参数就是返回类型
+            if (_entityType == null) throw new Exception("参数异常");
+            // 设置查询实体
+            this.propList = _entityType.GetProperties().Where(pi => pi.PropertyType.IsSimpleType()).Select(n => n.Name).ToList();
             this.Visit(expression);
             var sql = "";
             var first = true;
@@ -41,7 +46,16 @@ namespace Dapper.DBContext.Helper
             return sql;
         }
 
-        
+        protected override Expression VisitLambda(LambdaExpression node)
+        {
+            Console.WriteLine("VisitLambda:" + node.ToString());
+
+            //var entityType = node.Parameters[0].Type;
+            //_entityType = entityType;
+            //this.propList = entityType.GetProperties().Where(pi => pi.PropertyType.IsSimpleType()).Select(n => n.Name).ToList();
+            this.Visit(node.Body);
+            return node;
+        }
 
         /// <summary>
         ///  二元表达式
@@ -94,7 +108,8 @@ namespace Dapper.DBContext.Helper
         protected override Expression VisitMemberAccess(MemberExpression node)
         {
             var memberName = node.Member.Name;
-            if (this.propList.Count > 0 && this.propList.Contains(memberName))
+            var memberType = node.Expression.Type;
+            if (this.propList.Count > 0 && this.propList.Contains(memberName) && memberType == _entityType)
             {
                 var columnName = ReflectionHelper.GetColumnName(node.Member.Name, this._entityType);
                 this._convertElements.Push(_dialect.GetColumn(columnName));
@@ -103,7 +118,7 @@ namespace Dapper.DBContext.Helper
             else
             {
                 // this._convertElements.Push(GetValue(node).ToString());
-                PushValue("{0}", GetValue(node));
+                PushValue("{0}", GetValue(node)); 
             }
 
 

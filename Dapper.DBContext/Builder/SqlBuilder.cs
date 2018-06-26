@@ -324,11 +324,11 @@ namespace Dapper.DBContext.Builder
                 }
             }
 
-            var table = _dialectBuilder.GetTable(typeof(TEntity));
+            var table = _dialectBuilder.GetTable(context.EntityType);
             if (string.IsNullOrEmpty(select))
             {
 
-                select = GetColumnNames(typeof(TEntity));
+                select = GetColumnNames(context.EntityType);
             }
             var sql = "SELECT " + select + " FROM " + table;
             if (!string.IsNullOrEmpty(where))

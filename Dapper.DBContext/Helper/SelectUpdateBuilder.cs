@@ -21,6 +21,10 @@ namespace Dapper.DBContext.Helper
         }
         public string BuildSelect(Expression expression, out Dictionary<string, object> arguments)
         {
+            this._entityType = expression.Type.GetGenericArguments().FirstOrDefault();  // 第一个参数就是返回类型
+            if (_entityType == null) throw new Exception("参数异常");
+            // 设置查询实体
+            this.propList = _entityType.GetProperties().Where(pi => pi.PropertyType.IsSimpleType()).Select(n => n.Name).ToList();
             this.Visit(expression);
             var sql = "";
             for (var i = 0; i < this._columns.Count; i++)

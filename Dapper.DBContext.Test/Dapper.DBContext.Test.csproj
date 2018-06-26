@@ -43,6 +43,7 @@
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Transactions" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <Choose>
@@ -62,6 +63,9 @@
     <Compile Include="Builder\JoinBuilderTest.cs" />
     <Compile Include="Builder\RowVersionTest.cs" />
     <Compile Include="Builder\SqlBuilderTest.cs" />
+    <Compile Include="DataBase\TransactionTest.cs" />
+    <Compile Include="DataBase\SqlServerDBTest.cs" />
+    <Compile Include="DataBase\IDataBaseTest.cs" />
     <Compile Include="Domain\Entity_Child_Test.cs" />
     <Compile Include="Domain\Entity_Lamda_To_Sql.cs" />
     <Compile Include="Domain\Entity_Parent_Test.cs" />

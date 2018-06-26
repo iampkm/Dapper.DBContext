@@ -1,256 +1,156 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using System.Data;
 using Dapper.DBContext.Builder;
+using System.Linq.Expressions;
 using Dapper.DBContext.Data;
 namespace Dapper.DBContext
 {
-    public class QueryService : IQuery
+   public class QueryService<TEntity>:IQuery<TEntity>
     {
-        ISqlBuilder _builder;
-        IConnectionFactory _connectionFactory;
-        IExecuteQuery _executeQuery;
-        IJoinQuery _joinQuery;
-        public QueryService(string connectionStringName)
-        {
-            this._connectionFactory = IConnectionFactory.Create(connectionStringName);
-            this._executeQuery = new ExecuteQuery(this._connectionFactory);
-            this._builder = this._connectionFactory.CreateBuilder();
-            this._joinQuery = this._connectionFactory.CreateJoinBuilder();
-        }
-        public QueryService(IConnectionFactory connectionFactory)
-        {
-            this._executeQuery = new ExecuteQuery(connectionFactory);
-            this._builder = this._connectionFactory.CreateBuilder();
-        }
-        /// <summary>
-        /// Dapper Connection. When you use it ,please first open it. When you finish, close it.
-        /// </summary>
-        protected IDbConnection DBConnection { get { return this._connectionFactory.CreateConnection(); } }
-        /// <summary>
-        /// Common Query method,execute sql 
-        /// </summary>
-        public IExecuteQuery Context { get { return this._executeQuery; } }
+       QueryContext _queryContext;
+       IConnectionFactory _connectionFactory;
+       IExecuteQuery _executeQuery;
+       ISqlBuilder _builder; 
 
-        public TEntity Find<TEntity>(int Id) where TEntity : class
+       public QueryService(string connectionStringName)
+       {
+           this._connectionFactory = IConnectionFactory.Create(connectionStringName);
+           this._executeQuery = new ExecuteQuery(this._connectionFactory);
+           this._builder = this._connectionFactory.CreateBuilder();
+           _queryContext = new QueryContext(_builder, _executeQuery);
+           _queryContext.EntityType = typeof(TEntity);
+       }
+
+       private QueryService(QueryContext context)
+       {
+           this._queryContext = context;
+           this._builder = context.Builder;
+           this._executeQuery = context.Query;
+       }
+
+        public IQuery<TEntity> Where(System.Linq.Expressions.Expression<Func<TEntity, bool>> predicate)
         {
-            return FindById<TEntity>(Id);
-        }
-        public TEntity Find<TEntity>(string Id) where TEntity : class
-        {
-            return FindById<TEntity>(Id);
+            _queryContext.Nodes.Add(new QueryNode(QueryNodeType.Where, predicate) );
+            return this;
         }
 
-        private TEntity FindById<TEntity>(object Id) where TEntity : class
+        public IQuery<TEntity> OrderBy<TKey>(System.Linq.Expressions.Expression<Func<TEntity, TKey>> keySelector)
         {
-            string sql = this._builder.BuildSelectById<TEntity>();
-            var result = this._executeQuery.QuerySingle<TEntity>(sql, new { Id = Id });
-            return result;
+            _queryContext.Nodes.Add(new QueryNode(QueryNodeType.OrderBy, keySelector));
+            return this;
         }
 
-        public TEntity Find<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
+        public IQuery<TEntity> OrderByDesc<TKey>(System.Linq.Expressions.Expression<Func<TEntity, TKey>> keySelector)
+        {
+            _queryContext.Nodes.Add(new QueryNode(QueryNodeType.OrderByDesc, keySelector));
+            return this;
+        }
+
+        public IQuery<TResult> Select<TResult>(Expression<Func<TEntity, TResult>> selector)
+        {
+            // 只允许使用一次select 
+            if (_queryContext.Nodes.Exists(n => n.NodeType == QueryNodeType.Select)) throw new Exception("The select method can only be used once ");
+            _queryContext.Nodes.Add(new QueryNode(QueryNodeType.Select, selector));
+            return new QueryService<TResult>(_queryContext);
+        }
+
+        public TEntity FirstOrDefault(Expression<Func<TEntity, bool>> predicate)
         {
             object args = new object();
-            string sql = this._builder.BuildSelectByLamda(expression, out args);
+            string sql = this._builder.BuildSelectByLamda(predicate, out args);
             var result = this._executeQuery.QuerySingle<TEntity>(sql, args);
+            _queryContext.Clear();
             return result;
         }
 
-        public TEntity Find<TEntity>(string sql, object param) where TEntity : class
+        public List<TEntity> ToList()
+        {
+            return this.ToEnumerable().ToList();
+        }
+
+        public IEnumerable<TEntity> ToEnumerable()
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByContext<TEntity>(this._queryContext, out args);
+            var result = this._executeQuery.Query<TEntity>(sql, args);
+            _queryContext.Clear();
+            return result;
+        }
+
+        public Dictionary<TKey, TEntity> ToDictionary<TKey>(Func<TEntity, TKey> keySelector)
+        {
+            return this.ToEnumerable().ToDictionary(keySelector);
+        }
+
+        public int Count(Expression<Func<TEntity, bool>> predicate = null)
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda<TEntity>(predicate, out args, "count(*)");
+            var result = this._executeQuery.ExecuteScalar<int>(sql, args);
+            _queryContext.Clear();
+            return result;
+        }
+
+        public bool Exists(Expression<Func<TEntity, bool>> predicate)
+        {
+            return Count(predicate) > 0;
+        }
+
+        public Task<TEntity> FirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda(predicate, out args);
+            var result = this._executeQuery.QuerySingleAsync<TEntity>(sql, args);
+            _queryContext.Clear();
+            return result;
+        }
+
+        public List<TEntity> ToListAsync()
+        {
+            return ToEnumerableAsync().Result.ToList();
+        }
+
+        public Task<IEnumerable<TEntity>> ToEnumerableAsync()
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByContext<TEntity>(this._queryContext, out args);
+            var result = this._executeQuery.QueryAsync<TEntity>(sql, args);
+            _queryContext.Clear();
+            return result;
+        }
+
+        public Dictionary<TKey, TEntity> ToDictionaryAsync<TKey>(Func<TEntity, TKey> keySelector)
+        {
+            return ToEnumerableAsync().Result.ToDictionary(keySelector);
+        }
+
+        public Task<int> CountAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            object args = new object();
+            string sql = this._builder.BuildSelectByLamda<TEntity>(predicate, out args, "count(*)");
+            var result = this._executeQuery.ExecuteScalarAsync<int>(sql, args);
+            _queryContext.Clear();
+            return result;
+        }
+
+        public bool ExistsAsync(Expression<Func<TEntity, bool>> predicate)
+        {
+            return CountAsync(predicate).Result > 0;
+        }
+
+        public IEnumerable<TEntity> Query(string sql, object param = null)
+        {
+            return this._executeQuery.Query<TEntity>(sql, param);
+        }
+
+        public TEntity QuerySingle(string sql, object param = null)
         {
             return this._executeQuery.QuerySingle<TEntity>(sql, param);
         }
 
-        public IEnumerable<TEntity> Find<TEntity>(int[] Ids) where TEntity : class
-        {
-           // return FindByIds<TEntity>(Ids);
-            string sql = this._builder.BuildSelectById<TEntity>(false);
-            var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
-            return result;
-        }
-
-        public IEnumerable<TEntity> Find<TEntity>(string[] Ids) where TEntity : class
-        {
-           // return FindByIds<TEntity>(Ids);
-            string sql = this._builder.BuildSelectById<TEntity>(false);
-            var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
-            return result;
-        }
-
-        //private IEnumerable<TEntity> FindByIds<TEntity>(object Ids) where TEntity : class
-        //{
-        //    string sql = this._builder.buildSelectById<TEntity>(false);
-        //    var result = this._executeQuery.Query<TEntity>(sql, new { Id = Ids });
-        //    return result;
-        //}
-
-        public IEnumerable<TEntity> FindAll<TEntity>() where TEntity : class
-        {
-            string sql = this._builder.BuildSelect<TEntity>();
-            var result = this._executeQuery.Query<TEntity>(sql, null);
-            return result;
-        }
-
-        public IEnumerable<TEntity> FindAll<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda(expression, out args);
-            var result = this._executeQuery.Query<TEntity>(sql, args);
-            return result;
-        }
-
-        public IEnumerable<TEntity> FindAll<TEntity>(string sql, object param) where TEntity : class
-        {
-            return this._executeQuery.Query<TEntity>(sql, param);
-        }
-        public bool Exists<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
-            var result = this._executeQuery.ExecuteScalar<int>(sql, args);
-            return result > 0;
-        }
-        public int Count<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
-            var result = this._executeQuery.ExecuteScalar<int>(sql, args);
-            return result;
-        }
-        public int Count<TEntity>(string where, object param) where TEntity : class
-        {
-            if (string.IsNullOrEmpty(where)) { return Count<TEntity>(); }
-            string sql = string.Format("{0} where 1=1 {1}", _builder.BuildSelect<TEntity>("count(*)"), where);
-            var result = this._executeQuery.ExecuteScalar<int>(sql, param);
-            return result;
-        }
-        public TResult Sum<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity, TResult>(expression, out args, select, "sum");
-            var result = this._executeQuery.ExecuteScalar<TResult>(sql, args);
-            return result;
-        }
-        public TResult FindScalar<TResult>(string sql, object param)
-        {
-            var result = this._executeQuery.ExecuteScalar<TResult>(sql, param);
-            return result;
-        }
-        public IJoinQuery FindJoin<TEntity>() where TEntity : class
-        {
-            var entityType = typeof(TEntity);
-            this._joinQuery.JoinContext.Add(entityType);
-            return this._joinQuery;
-        }
-
-        public IJoinQuery FindPage<TEntity>(int pageIndex, int pageSize) where TEntity : class
-        {
-            var entityType = typeof(TEntity);
-            this._joinQuery.JoinContext.SetPageInfo(pageIndex, pageSize);
-            this._joinQuery.JoinContext.Add(entityType);
-            return this._joinQuery;
-        }
-
-
-        public Task<TEntity> FindAsync<TEntity>(int Id) where TEntity : class
-        {
-            return FindSingleAsync<TEntity>(Id);
-        }
-
-        public Task<TEntity> FindAsync<TEntity>(string Id) where TEntity : class
-        {
-            return FindSingleAsync<TEntity>(Id);
-        }
-        private Task<TEntity> FindSingleAsync<TEntity>(object Id) where TEntity : class
-        {
-            string sql = this._builder.BuildSelectById<TEntity>();
-            var result = this._executeQuery.QuerySingleAsync<TEntity>(sql, Id);
-            return result;
-        }
-
-        public Task<TEntity> FindAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda(expression, out args);
-            var result = this._executeQuery.QuerySingleAsync<TEntity>(sql, args);
-            return result;
-        }
-        public Task<TEntity> FindAsync<TEntity>(string sql, object param) where TEntity : class
-        {
-            return this._executeQuery.QuerySingleAsync<TEntity>(sql, param);
-        }
-
-        public Task<IEnumerable<TEntity>> FindAsync<TEntity>(string[] Ids) where TEntity : class
-        {
-            return FindByIdsAsync<TEntity>(Ids);
-        }
-
-        public Task<IEnumerable<TEntity>> FindAsync<TEntity>(int[] Ids) where TEntity : class
-        {
-            return FindByIdsAsync<TEntity>(Ids);
-        }
-
-        private Task<IEnumerable<TEntity>> FindByIdsAsync<TEntity>(object Ids) where TEntity : class
-        {
-            string sql = this._builder.BuildSelectById<TEntity>(false);
-            var result = this._executeQuery.QueryAsync<TEntity>(sql, Ids);
-            return result;
-        }
-
-        public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>() where TEntity : class
-        {
-            string sql = this._builder.BuildSelect<TEntity>();
-            var result = this._executeQuery.QueryAsync<TEntity>(sql, null);
-            return result;
-        }
-
-        public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda(expression, out args);
-            var result = this._executeQuery.QueryAsync<TEntity>(sql, args);
-            return result;
-        }
-
-        public Task<IEnumerable<TEntity>> FindAllAsync<TEntity>(string sql, object param) where TEntity : class
-        {
-            return this._executeQuery.QueryAsync<TEntity>(sql, param);
-        }
-
-        public bool ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> expression) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
-            var result = this._executeQuery.ExecuteScalarAsync<int>(sql, args);
-            return result.Result > 0;
-        }
-
-        public Task<int> CountAsync<TEntity>(Expression<Func<TEntity, bool>> expression = null) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity>(expression, out args, "count(*)");
-            var result = this._executeQuery.ExecuteScalarAsync<int>(sql, args);
-            return result;
-        }
-
-        public Task<int> CountAsync<TEntity>(string where, object param) where TEntity : class
-        {
-            if (string.IsNullOrEmpty(where)) { return CountAsync<TEntity>(); }
-            string sql = string.Format("{0} where  1=1  {1}", _builder.BuildSelect<TEntity>("count(*)"), where);
-            var result = this._executeQuery.ExecuteScalarAsync<int>(sql, param);
-            return result;
-        }
-        public Task<TResult> SumAsync<TEntity, TResult>(Expression<Func<TEntity, TResult>> select, Expression<Func<TEntity, bool>> expression = null) where TEntity : class
-        {
-            object args = new object();
-            string sql = this._builder.BuildSelectByLamda<TEntity, TResult>(expression, out args, select, "sum");
-            var result = this._executeQuery.ExecuteScalarAsync<TResult>(sql, args);
-            return result;
-        }
-
+      
     }
 }

@@ -16,8 +16,6 @@ namespace Dapper.DBContext.Builder
        }
        public QueryNodeType NodeType { get; set; }
        public Expression Condition { get; set; }
-
-       public Type EntityType { get; set; }
       
     }
 
