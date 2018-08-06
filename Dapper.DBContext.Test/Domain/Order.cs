@@ -30,7 +30,7 @@ namespace Dapper.DBContext.Test.Domain
        /// </summary>
       // public Address Address { get; set; }
 
-       public virtual IList<OrderItem> Items { get; set; }
+       public List<OrderItem> Items { get; set; }
 
       // public virtual List<Address> addressList { get; set; }
       

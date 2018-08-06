@@ -211,5 +211,91 @@ namespace Dapper.DBContext.Test.Helper
            // Assert.AreEqual(expected, actual);
         }
 
+        [TestMethod]
+        public void Serialize_TestArray()
+        {
+            //Arrange
+            List<Entity_Serialize_Test> entitys = new List<Entity_Serialize_Test>();
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 1,
+                Birthday = DateTime.Parse("2018-01-01 10:20"),
+                Name = "Jack"
+            });
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 10,
+                Birthday = DateTime.Parse("2018-11-01 10:20"),
+                Name = "TOM"
+            });
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 20,
+                Birthday = DateTime.Parse("2018-03-01 10:20"),
+                Name = "Kate"
+            });
+            //Action
+            var actual = ReflectionHelper.Serialize(entitys.ToArray());
+            // Assert
+            var expected = @"Name : Jack,Age : 1,Birthday : 2018-01-01 10:20:00,Name : TOM,Age : 10,Birthday : 2018-11-01 10:20:00,Name : Kate,Age : 20,Birthday : 2018-03-01 10:20:00,";
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod]
+        public void Serialize_TestList()
+        {
+            //Arrange
+            List<Entity_Serialize_Test> entitys = new List<Entity_Serialize_Test>();
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 1,
+                Birthday = DateTime.Parse("2018-01-01 10:20"),
+                Name = "Jack"
+            });
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 10,
+                Birthday = DateTime.Parse("2018-11-01 10:20"),
+                Name = "TOM"
+            });
+            entitys.Add(new Entity_Serialize_Test()
+            {
+                Age = 20,
+                Birthday = DateTime.Parse("2018-03-01 10:20"),
+                Name = "Kate"
+            });
+            //Action
+            var actual = ReflectionHelper.Serialize(entitys);
+            // Assert
+            var expected = @"Name : Jack,Age : 1,Birthday : 2018-01-01 10:20:00,Name : TOM,Age : 10,Birthday : 2018-11-01 10:20:00,Name : Kate,Age : 20,Birthday : 2018-03-01 10:20:00,";
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod]
+        public void Serialize_TestClass()
+        {
+            //Arrange
+            var entity = new Entity_Serialize_Test()
+            {
+                Age = 1,
+                Birthday = DateTime.Parse("2018-01-01 10:20"),
+                Name = "Jack"
+            };
+            //Action
+            var actual = ReflectionHelper.Serialize(entity);
+            // Assert
+            var expected = @"Name : Jack,Age : 1,Birthday : 2018-01-01 10:20:00,";
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod]
+        public void Serialize_TestString()
+        {
+            //Arrange
+            var name = "Jack";
+            //Action
+            var actual = ReflectionHelper.Serialize(name);
+            // Assert
+            var expected = @"Jack";
+            Assert.AreEqual(expected, actual);
+        }
+
     }
 }

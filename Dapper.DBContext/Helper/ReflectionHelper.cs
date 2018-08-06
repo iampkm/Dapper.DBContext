@@ -1,5 +1,6 @@
 ﻿using Dapper.DBContext.Schema;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -293,7 +294,39 @@ namespace Dapper.DBContext.Helper
         /// <returns></returns>
         public static string Serialize(object entity)
         {
+            if (entity == null) { return ""; }
+            var entityType = entity.GetType();
+            var result = new StringBuilder();
+            if (entityType.IsArray)
+            {
+                var entityArray = entity as Array;
+                foreach (var item in entityArray)
+                {
+                    result.Append(SerializeClass(item));
+                }
+            }
+            else if (entityType.IsGenericType)
+            {
+                var entityList = entity as IEnumerable;
+                var childObjList = entityList.GetEnumerator();
+                while (childObjList.MoveNext())
+                {
+                    result.Append(SerializeClass(childObjList.Current));
+                }
+            }
+            else if (entityType.IsClass && entityType != typeof(string))
+            {
+                result.Append(SerializeClass(entity));
+            }
+            else
+            {
+                result.Append(entity.ToString());
+            }
+            return result.ToString();
+        }
 
+        private static string SerializeClass(object entity)
+        {
             var propInfos = GetPropertyInfos(entity.GetType());
             string keyValue = "";
             if (propInfos.Count == 0)

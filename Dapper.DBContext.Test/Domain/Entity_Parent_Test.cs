@@ -45,5 +45,12 @@ namespace Dapper.DBContext.Test.Domain
        public string SysNo { get; set; }
    }
 
-  
+   public class Entity_Serialize_Test
+   {
+       public string Name { get; set; }
+
+       public int Age { get; set; }
+
+       public DateTime Birthday { get; set; }
+   }
 }

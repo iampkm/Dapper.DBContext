@@ -33,8 +33,22 @@ namespace Dapper.DBContext.Test.DataBase
                 ProductName = "haha",
                 Quantity = 10
             };
-            model.Items.Add(item);          
+            model.Items.Add(item);  
+            _db.Insert<Order>(model);
+            _db.SaveChange();
 
+            Assert.AreEqual("1,", "1");
+        }
+        [TestMethod]
+        public void Insert_ParentClassAndChildClassHaveNotElement()
+        {
+            Order model = new Order()
+            {
+                Code = "abc123",
+                CreateAt = DateTime.Now,
+                CreateBy = 1,
+                Status = OrderState.Paid
+            };           
             _db.Insert<Order>(model);
             _db.SaveChange();
 
