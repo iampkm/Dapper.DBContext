@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Dapper.DBContext.Helper
 {
-   public class SelectUpdateBuilder:ExpressionVisitor
+    public class SelectUpdateBuilder : ExpressionVisitor
     {
         protected Dictionary<string, object> _args;
         protected List<string> _columns;
@@ -54,7 +54,7 @@ namespace Dapper.DBContext.Helper
                 var memberAssignment = binding as MemberAssignment;
                 // 参数
                 var value = GetValue(memberAssignment.Expression);
-                if (value.GetType().IsEnum)  // 枚举要转换成int 型
+                if (value != null && value.GetType().IsEnum)  // 枚举要转换成int 型
                 {
                     value = (int)value;
                 }
@@ -65,7 +65,7 @@ namespace Dapper.DBContext.Helper
                 this._columns.Add(string.Format("{0} = {1}", column, argName));
                 PutValue(argName, value);
             }
-            return  node;
+            return node;
         }
 
         private string GetArgumentName(string columnName)

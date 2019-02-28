@@ -99,7 +99,7 @@ namespace Dapper.DBContext.Helper
             //Expression l = this.Visit(node.Left);    
             //Expression r = this.Visit(node.Right);
 
-           // this.list.Push(node.NodeType.ToString());
+            // this.list.Push(node.NodeType.ToString());
             return node;
         }
 
@@ -176,7 +176,7 @@ namespace Dapper.DBContext.Helper
 
             var entityType = node.Parameters[0].Type;
             _entityType = entityType;
-            this.propList = entityType.GetProperties().Where(pi=>pi.PropertyType.IsSimpleType()).Select(n => n.Name).ToList();
+            this.propList = entityType.GetProperties().Where(pi => pi.PropertyType.IsSimpleType()).Select(n => n.Name).ToList();
             this.Visit(node.Body);
             return node;
         }
@@ -228,10 +228,18 @@ namespace Dapper.DBContext.Helper
         /// <returns></returns>
         protected static object GetValue(Expression member)
         {
-            var objectMember = Expression.Convert(member, typeof(object));
-            var getterLambda = Expression.Lambda<Func<object>>(objectMember);
-            var getter = getterLambda.Compile();
-            return getter();
+            try
+            {
+                var objectMember = Expression.Convert(member, typeof(object));
+                var getterLambda = Expression.Lambda<Func<object>>(objectMember);
+                var getter = getterLambda.Compile();
+                return getter();
+            }
+            catch
+            {
+                return null;
+            }
+            // return Expression.Lambda(member).Compile().DynamicInvoke();
         }
 
         /// <summary>
@@ -289,6 +297,24 @@ namespace Dapper.DBContext.Helper
                     throw new NotSupportedException(nodeType + "is not supported.");
             }
             return opr;
+        }
+
+        /// <summary>
+        ///  XX  == null ==>  XX is NULL
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsNullExpression(BinaryExpression node)
+        {
+            return (node.NodeType == ExpressionType.Equal && node.Right.NodeType == ExpressionType.Constant && ((ConstantExpression)node.Right).Value == null);            
+        }
+        /// <summary>
+        ///  XX  != null ==>  XX is NOT NULL
+        /// </summary>
+        /// <returns></returns>
+        protected bool IsNotNullExpression(BinaryExpression node)
+        {
+            return (node.NodeType == ExpressionType.NotEqual && node.Right.NodeType == ExpressionType.Constant && ((ConstantExpression)node.Right).Value == null);
+           // var rightValue =  Expression.Lambda(node.Right).Compile().DynamicInvoke();
         }
     }
 }

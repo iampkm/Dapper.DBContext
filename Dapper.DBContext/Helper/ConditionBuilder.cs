@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Expressions;
 using Dapper.DBContext.Builder;
+using System.Reflection;
+using System.Diagnostics;
+
 namespace Dapper.DBContext.Helper
 {
     public class ConditionBuilder : ExpressionVisitor
@@ -39,8 +42,7 @@ namespace Dapper.DBContext.Helper
                 }
                 else {
                     sql += " " + this._convertElements.Pop() ;
-                }
-               
+                }               
             }
             arguments = this._args;
             return sql;
@@ -65,27 +67,27 @@ namespace Dapper.DBContext.Helper
         protected override Expression VisitBinary(BinaryExpression node)
         {
             var operate = ConvertNodeTypeToSql(node.NodeType);
-            Console.WriteLine("VisitBinary:" + node.ToString() + " | nodeType:" + node.NodeType.ToString());
-
-            Console.WriteLine("VisitBinary- right: nodeType= " + node.Right.NodeType.ToString());
-            this.Visit(node.Right);
-            this._convertElements.Push(operate);
-            this.Visit(node.Left);
-
-            //this.Visit(node.Left);
-            //this.Visit(node.Right);
-
-            //string right = this.convertElements.Pop();
-            //string left = this.convertElements.Pop();
-
-            //string condition = String.Format(" {0} {1} {2} ", left, operate, right);
-            //this.convertElements.Push(condition);
-
-
+        
+            // 构建带NULL 的语句
+            if (IsNullExpression(node))
+            {
+                this._convertElements.Push("IS NULL");
+            }
+            else if (IsNotNullExpression(node)) {
+                this._convertElements.Push("IS NOT NULL");
+            }
+            else
+            {
+                this.Visit(node.Right);
+                this._convertElements.Push(operate);
+            }          
+            this.Visit(node.Left);                    
 
             return node;
-            // return base.VisitBinary(node);
         }
+
+
+
         /// <summary>
         ///  一元表达式
         /// </summary>
@@ -106,21 +108,16 @@ namespace Dapper.DBContext.Helper
         /// <param name="node"></param>
         /// <returns></returns>
         protected override Expression VisitMemberAccess(MemberExpression node)
-        {
-            var memberName = node.Member.Name;
-            var memberType = node.Expression.Type;
-            if (this.propList.Count > 0 && this.propList.Contains(memberName) && memberType == _entityType)
+        { 
+            var result = GetValue(node);
+            if (result == null)
             {
-                var columnName = ReflectionHelper.GetColumnName(node.Member.Name, this._entityType);
-                this._convertElements.Push(_dialect.GetColumn(columnName));
-                // this._convertElements.Push(string.Format("[{0}].[{1}]", this._entityType.Name, node.Member.Name));
+                    var columnName = ReflectionHelper.GetColumnName(node.Member.Name, this._entityType);
+                   this._convertElements.Push(_dialect.GetColumn(columnName));  
             }
-            else
-            {
-                // this._convertElements.Push(GetValue(node).ToString());
-                PushValue("{0}", GetValue(node)); 
+            else {
+                   PushValue("{0}", result); 
             }
-
 
             return node;
         }
@@ -131,36 +128,30 @@ namespace Dapper.DBContext.Helper
         /// <returns></returns>
         protected override Expression VisitMethodCall(MethodCallExpression node)
         {
-            if (node.Method.Name == "Like")
+            switch (node.Method.Name)
             {
-                PushValue("LIKE {0}", GetValue(node.Arguments[1]));
-                this.Visit(node.Arguments[0]);
-            }
-
-            if (node.Method.Name == "In")
-            {
-                PushValue("IN {0}", GetValue(node.Arguments[1]));
-
-                this.Visit(node.Arguments[0]);
-            }
-            if (node.Method.Name == "Between")
-            {
-                var from = GetValue(node.Arguments[1]);
-                var to = GetValue(node.Arguments[2]);
-
-                PushValue("BETWEEN {0} AND {1}", from, to);
-
-                // this._convertElements.Push(string.Format("BETWEEN {0} AND {1}", from, to));
-
-                this.Visit(node.Arguments[0]);
-            }
-
-            if (node.Object != null)
-            {
-                this.Visit(node.Object);
+                case "Like":
+                    PushValue("LIKE {0}", GetValue(node.Arguments[1]));
+                    this.Visit(node.Arguments[0]);
+                    break;
+                case "In":
+                    PushValue("IN {0}", GetValue(node.Arguments[1]));
+                    this.Visit(node.Arguments[0]);
+                    break;
+                case "Between":
+                    var from = GetValue(node.Arguments[1]);
+                    var to = GetValue(node.Arguments[2]);
+                    PushValue("BETWEEN {0} AND {1}", from, to);
+                    this.Visit(node.Arguments[0]);
+                    break;
+                default:
+                    // 非约定方法,计算方法执行结果
+                    // object result = Expression.Lambda(node).Compile().DynamicInvoke();
+                    object result = GetValue(node);
+                    PushValue("{0}", result);
+                    break;
             }
             return node;
-            //return base.VisitMethodCall(node);
         }
 
         /// <summary>
@@ -176,10 +167,6 @@ namespace Dapper.DBContext.Helper
             }
             else
             {
-                //var argumentName = GetArgumentName();
-                //this._args.Add(argumentName, node.Value);
-                //this._convertElements.Push(argumentName);
-                // this._convertElements.Push(node.Value.ToString());
                 PushValue("{0}", node.Value);
             }
 

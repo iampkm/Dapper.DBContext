@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2048
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Dapper.DBContext", "Dapper.DBContext\Dapper.DBContext.csproj", "{225EEAFD-8E27-4B12-ABC3-52ABF1487D2B}"
 EndProject
@@ -31,11 +31,12 @@ Global
 		{62195B5E-3F4A-4E70-AF22-34CD675FDD12}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62195B5E-3F4A-4E70-AF22-34CD675FDD12}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7D5A95A8-7A28-4724-8CA3-A845D8A47B61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D5A95A8-7A28-4724-8CA3-A845D8A47B61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7D5A95A8-7A28-4724-8CA3-A845D8A47B61}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D5A95A8-7A28-4724-8CA3-A845D8A47B61}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8EC73C42-F073-4F60-9669-07D10931721B}
 	EndGlobalSection
 EndGlobal

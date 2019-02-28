@@ -279,5 +279,39 @@ namespace Dapper.DBContext.Test.Builder
             Assert.AreEqual(DateTime.Parse("2018-02-02"), dd["@PaidTime"]);
             Assert.AreEqual(2, dd["@Status"]);
         }
+         [TestMethod]
+        public void BuildUpdate_Foreach_Entity_with_where()
+        {
+            //Arrange
+            List<Entity_Lamda_To_Sql> list = new List<Entity_Lamda_To_Sql>();
+            for (var i = 0; i < 2; i++)
+            {
+                Entity_Lamda_To_Sql entity = new Entity_Lamda_To_Sql()
+                {
+                    Id = i,
+                    Code = "100"+i.ToString(),
+                    TotalAmount = 125.6m,
+                    TotalQuantity = 10,
+                    PaidTime = DateTime.Parse("2018-02-02"),
+                    Status = OrderStatus.Paid
+                };
+                list.Add(entity);
+            }
+
+            list.ForEach(item =>
+            {
+                Expression<Func<Entity_Lamda_To_Sql, bool>> where = n => n.Status == OrderStatus.WaitToPay && n.Id == item.Id;
+                //Action
+                object args = new object();
+                var actual = _builder.BuildUpdate<Entity_Lamda_To_Sql>(new Entity_Lamda_To_Sql() { 
+                 Status = OrderStatus.Create, Code = item.Code
+                }, where, out args).Trim();
+
+                var expected = "UPDATE [Order] SET [Code] = @Code,[Total_Amount] = @Total_Amount,[TotalQuantity] = @TotalQuantity,[PaidTime] = @PaidTime,[Status] = @Status WHERE [Status] = @P1 AND [Id] = @P0";
+
+                // Assert
+                Assert.AreEqual(expected, actual);
+            });
+        }
     }
 }

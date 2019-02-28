@@ -23,5 +23,5 @@ namespace Dapper.DBContext.Schema
 
     // 主键默认逻辑：  列名=Id ，列名被标记 Key
     // 主键是否自增逻辑：  主键类型为 int 或long  默认自增
-   // 标记Key 的属性， 根据 AutoIncrement 判断是否自增
+   //  标记Key 的属性， 根据 AutoIncrement 判断是否自增
 }

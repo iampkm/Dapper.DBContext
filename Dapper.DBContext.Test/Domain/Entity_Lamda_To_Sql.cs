@@ -29,11 +29,58 @@ namespace Dapper.DBContext.Test.Domain
         public OrderStatus Status { get; set; }
 
         public List<Entity_Lamda_To_Sql_Foreign> list { get; set; }
+
+        /// <summary>
+        ///  return 123
+        /// </summary>
+        /// <returns></returns>
+        public int GetNewId()
+        {
+            return 123;
+        }
+
+        /// <summary>
+        /// return id+10
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public int GetNewId(int id)
+        {
+            return id + 10;
+        }
+
+        /// <summary>
+        /// 2019-01-01 10:10:10
+        /// </summary>
+        /// <returns></returns>
+        public DateTime GetTime()
+        {
+            return DateTime.Parse("2019-01-01 10:10:10");
+        }
     }
     [Table("OrderItem")]
     public class Entity_Lamda_To_Sql_Foreign:IEntity
     {
         public int Id { get; set; }
+
+        /// <summary>
+        ///  return 123
+        /// </summary>
+        /// <returns></returns>
+        public int GetNewId()
+        {
+            return 123;
+        }
+
+        /// <summary>
+        /// return id+10
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public int GetNewId(int id)
+        {
+            return id + 10;
+        }
     }
 
     public enum OrderStatus

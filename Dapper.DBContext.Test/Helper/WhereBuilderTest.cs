@@ -45,7 +45,7 @@ namespace Dapper.DBContext.Test.Helper
         public void Build_One_PropieteSame()
         {
             //Arrange
-           // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
             Order model = new Order();
             model.Code = "No123";
             Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == model.Code;
@@ -57,6 +57,131 @@ namespace Dapper.DBContext.Test.Helper
 
             Assert.AreEqual(expected, actual);
             Assert.AreEqual("No123", args["@P0"]);
+        }
+
+        [TestMethod]
+        public void Build_Same_Propiete_And_Type_Add()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i =>  i.Code == i.Code + model.Code;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] = [Code] + @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("No123", args["@P0"]);
+        }
+
+        [TestMethod]
+        public void Build_Same_Propiete_And_Type_Add_right()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i =>i.Code + model.Code == i.Code;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] + @P0 = [Code]";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("No123", args["@P0"]);
+        }
+
+        [TestMethod]
+        public void Build_One_Propiete_Type_Same()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == model.Code && i.Code == i.Code + model.Code;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] = @P1 AND [Code] = [Code] + @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("No123", args["@P0"]);
+            Assert.AreEqual("No123", args["@P1"]);
+        }
+
+        [TestMethod]
+        public void Build_One_Object_Method()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.PaidTime == model.GetTime();
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[PaidTime] = @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(DateTime.Parse("2019-01-01 10:10:10"), args["@P0"]);
+        }
+
+        [TestMethod]
+        public void Build_One_Object_Datetime_Now()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.PaidTime == DateTime.Now;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[PaidTime] = @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), ((DateTime)args["@P0"]).ToString("yyyy-MM-dd HH:mm:ss"));
+        }
+
+        [TestMethod]
+        public void Build_One_Object_Method2()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == model.GetNewId().ToString();
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] = @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("123", args["@P0"]);
+        }
+
+        [TestMethod]
+        public void Build_One_Object_Method_withParameter()
+        {
+            //Arrange
+            // Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            Entity_Lamda_To_Sql model = new Entity_Lamda_To_Sql();
+            model.Code = "No123";
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == model.GetNewId(113).ToString();
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] = @P0";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual("123", args["@P0"]);
         }
 
         [TestMethod]
@@ -78,7 +203,7 @@ namespace Dapper.DBContext.Test.Helper
         public void Build_One_variable_menu()
         {
             //Arrange
-            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Status ==  OrderStatus.Paid;
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Status == OrderStatus.Paid;
             Dictionary<string, object> args = new Dictionary<string, object>();
             //Action
             var actual = _builder.BuildWhere(predicate, out args).Trim();
@@ -181,6 +306,54 @@ namespace Dapper.DBContext.Test.Helper
             Assert.AreEqual(1, args["@P1"]);
             Assert.AreEqual(now, args["@P0"]);
         }
-        
+
+        [TestMethod]
+        public void Build_One_is_Null()
+        {
+            //Arrange
+
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == null;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] IS NULL";
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Build_One_is_Not_Null()
+        {
+            //Arrange
+
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code != null;
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] IS NOT NULL";
+
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void Build_One_Mutile_is_Null()
+        {
+            //Arrange
+            DateTime now = DateTime.Parse("2018-01-25 10:00:00");
+            Expression<Func<Entity_Lamda_To_Sql, bool>> predicate = i => i.Code == null && i.PaidTime.Between(now.Date, now.Date.AddDays(1).AddSeconds(-1));
+            Dictionary<string, object> args = new Dictionary<string, object>();
+            //Action
+            var actual = _builder.BuildWhere(predicate, out args).Trim();
+            // Assert
+            var expected = "[Code] IS NULL AND [PaidTime] BETWEEN @P0 AND @P1";
+
+            Assert.AreEqual(expected, actual);
+            Assert.AreEqual(now.Date, args["@P0"]);
+            Assert.AreEqual(now.Date.AddDays(1).AddSeconds(-1), args["@P1"]);
+        }
+
+
     }
 }
