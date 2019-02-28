@@ -87,10 +87,26 @@ var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).ToLi
  // select Multiple  columns 
   var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).Select(n => new { n.Id, n.PaidTime }).ToList();  
  // sql = SELECT [Id] AS Id, [PaidTime] AS PaidTime FROM [Order] Where Id = @P0 Order BY Id desc
+ 
+  // Column Alias
+   var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n=> n.Id ).Select(n=> new { OrderId = 1, OrderCode = n.Code, n.Price }).ToList(); 
+    // sql = SELECT 1 AS OrderId, [Code] AS OrderCode,[Price] AS Price FROM [Order] Where Id =@P0 Order BY Id desc
+ 
+ // like 
+  var orderCode ="%ABC%";
+var list =_db.Table<Order>().Where(n => n.Code.Like(orderCode)).OrderByDesc(n => n.Id).ToList(); 
 
- // Column Alias
-   var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).Select(n=> new { OrderId = 1, OrderCode = n.Code, n.Price }).ToList();  
- // sql = SELECT 1 AS OrderId, [Code] AS OrderCode,[Price] AS Price FROM [Order] Where Id =@P0 Order BY Id desc
+ // In 
+   int[] numbers = { 1, 2, 3, 4 };
+var list =_db.Table<Order>().Where(n => n.Id.In(numbers) ).OrderByDesc(n => n.Id).ToList();
+// between  and 
+ DateTime now = DateTime.Parse("2018-01-25 10:00:00");
+var list =_db.Table<Order>().Where(n => n.PaidTime.Between(now.Date, now.Date.AddDays(1).AddSeconds(-1) ).OrderByDesc(n => n.Id).ToList();
+// enum 
+ var list =_db.Table<Order>().Where(n => n.Stauts == OrderStatus.Paid).OrderByDesc(n => n.Id ).ToList(); 
+ // is null  or is not null 
+ var list =_db.Table<Order>().Where(n => n.Code == null || n.PaidTime != null ).OrderByDesc(n => n.Id).ToList(); 
+
  //  sql Query
  var list = _db.Table<OrderDto>.Query("select * from order where id = @id",new{ id > 123});
  var entity = _db.Table<OrderDto>.QuerySingle("select * from order where id = @id",new{ id = 123});
@@ -117,30 +133,30 @@ var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).ToLi
 5 .Insert  Aggregate entity 
 ```C#
   IDBContext _db = new DapperDBContext("mssqldb");
-     Order model = new Order()
-        {
-            Code = "abc123",
-            TotalAmount = 10.1f,
-            PaidTime = DateTime.Now,
-            Status = OrderState.Paid
-        };
-        OrderItem item = new OrderItem()
-            {           
-                Price = 12.33m,
-                ProductName = "haha",
-                Quantity = 10
-            };
-            model.Items.Add(item);
-    _db.Insert(model);
-    _db.SaveChange();   
+  Order model = new Order()
+   {
+       Code = "abc123",
+       TotalAmount = 10.1f,
+       PaidTime = DateTime.Now,
+       Status = OrderState.Paid
+   };
+  OrderItem item = new OrderItem()
+     {           
+      Price = 12.33m,
+      ProductName = "haha",
+      Quantity = 10
+     };
+  model.Items.Add(item);
+  _db.Insert(model);
+  _db.SaveChange();   
     // realy begin to execute sql with transaction  
     //  will be save Order and OrderItem
-    var id = model.Id //   get AutoIncrement Id value
+  var id = model.Id //   get AutoIncrement Id value
 ```
 6.  update 
 ```C#
  // UPDATE ONE
-  IDBContext _db = new DapperDBContext("mssqldb");
+    IDBContext _db = new DapperDBContext("mssqldb");
      Order model = _db.Table<Order>().FirstOrDefault(n=>n.Id == 123);
      model.Code ="ABC123";
     _db.Update(model);
