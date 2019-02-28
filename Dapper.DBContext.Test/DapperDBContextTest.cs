@@ -21,7 +21,6 @@ namespace Dapper.DBContext.Test
             Order model = new Order()
             {
                 Code = "abc123",
-                Address = new Address("cq", "sha ping ba"),
                 CreateAt = DateTime.Now,
                 CreateBy = 1,
                 Status = OrderState.Paid
@@ -36,8 +35,6 @@ namespace Dapper.DBContext.Test
                 Quantity = 10
             };
             model.Items.Add(item);
-            model.addressList.Add(new Address("city", "area"));
-
             _db.Insert(model);
             _db.SaveChange();
 
