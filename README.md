@@ -1,5 +1,7 @@
 # Dapper.DBContext
 Dapper.DBContext is a orm library based on dapper.
+Dapper.DBContext will help you to finish 80% work.
+The remaining 20% of the work，such as  Multi-table queries recommend writing SQL by yourself. 
 
 # nuget install
 Install-Package Dapper.DBContext
@@ -34,7 +36,9 @@ public class OrderItem:IEntity
 {
     [Key]   //  primary key
     public int Id { get; set; }
-    puublic string ProductName {get;set;}
+    // foreign key,  default rule: Parent Class Name + "Id"
+    public int OrderId { get; set; }
+    public string ProductName {get;set;}
     public int Quantity { get; set; }
     public decmail Price { get; set; }
 }
