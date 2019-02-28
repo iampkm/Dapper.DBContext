@@ -1,6 +1,6 @@
 # Dapper.DBContext
 Dapper.DBContext is a orm library based on dapper.
-Dapper.DBContext will help you to finish 80% work.
+It will help you to finish 80% work.
 The remaining 20% of the work，such as  Multi-table queries recommend writing SQL by yourself. 
 
 # nuget install
