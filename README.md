@@ -1,7 +1,7 @@
 # Dapper.DBContext
 Dapper.DBContext is a orm library based on dapper.
 
-#nuget install
+# nuget install
 Install-Package Dapper.DBContext
 
 # QuickStart
@@ -67,37 +67,37 @@ public class OrderDto
 ```
 3. Query a Entity
 ```C#
-     // query a row
-     var entity= _db.Table<Order>().FirstOrDefault(n => n.Id == 123);   // order instance or null
-     var entity= _db.Table<Order>().FirstOrDefault(n => n.Code == 'ABC');   // order instance or null
-     var count= _db.Table<Order>().Count(n => n.TotalQuantity > 1);      
-     var exists= _db.Table<Order>().Exists(n => n.Id == 123);   // true or false
-     
-     // Query list
-     var list =_db.Table<Order>().Where(n => n.Id == 123).ToList(); 
-     // Order By  asc
-     var list =_db.Table<Order>().Where(n => n.Id == 123).OrderBy(n=>n.Id).ToList();  
-     // order by desc
-     var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).ToList();  
-     
-     // select column 
-       var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).Select(n=>n.Code).ToList();  
-      // sql = SELECT [Code] FROM [Order] Where Id =@P0 Order BY Id desc
-      
-      // select Multiple  columns 
-       var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).Select(n=>new { n.Id, n.PaidTime }).ToList();  
-      // sql = SELECT [Id] AS Id, [PaidTime] AS PaidTime FROM [Order] Where Id =@P0 Order BY Id desc
-      
-      // Column Alias
-        var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).Select(n=>new { OrderId = 1, OrderCode = n.Code, n.Price }).ToList();  
-      // sql = SELECT 1 AS OrderId, [Code] AS OrderCode,[Price] AS Price FROM [Order] Where Id =@P0 Order BY Id desc
-      //  sql Query
-      var list = _db.Table<OrderDto>.Query("select * from order where id=@id",new{id>123});
-      var entity = _db.Table<OrderDto>.QuerySingle("select * from order where id=@id",new{id=123});
-      
-      // Dapper sql Query
-      var list = _db.DataBase.Query<OrderDto>("select * from order where id=@id",new{id>123});  // Same as Dapper
-      var entity = _db.DataBase.QuerySingle<OrderDto>("select * from order where id=@id",new{id=123}); 
+// query a row
+var entity= _db.Table<Order>().FirstOrDefault(n => n.Id == 123);   //return order instance or null
+var entity= _db.Table<Order>().FirstOrDefault(n => n.Code == 'ABC');   //return order instance or null
+var count= _db.Table<Order>().Count(n => n.TotalQuantity > 1);      
+var exists= _db.Table<Order>().Exists(n => n.Id == 123);   //return true or false
+
+// Query list
+var list =_db.Table<Order>().Where(n => n.Id == 123).ToList(); 
+// Order By  asc
+var list =_db.Table<Order>().Where(n => n.Id == 123).OrderBy(n => n.Id).ToList();  
+// order by desc
+var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).ToList();  
+
+// select column 
+  var list =_db.Table<Order>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).Select(n => n.Code).ToList();  
+ // sql = SELECT [Code] FROM [Order] Where Id =@P0 Order BY Id desc
+
+ // select Multiple  columns 
+  var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n => n.Id).Select(n => new { n.Id, n.PaidTime }).ToList();  
+ // sql = SELECT [Id] AS Id, [PaidTime] AS PaidTime FROM [Order] Where Id = @P0 Order BY Id desc
+
+ // Column Alias
+   var list =_db.Table<OrderDto>().Where(n => n.Id == 123).OrderByDesc(n=>n.Id).Select(n=> new { OrderId = 1, OrderCode = n.Code, n.Price }).ToList();  
+ // sql = SELECT 1 AS OrderId, [Code] AS OrderCode,[Price] AS Price FROM [Order] Where Id =@P0 Order BY Id desc
+ //  sql Query
+ var list = _db.Table<OrderDto>.Query("select * from order where id = @id",new{ id > 123});
+ var entity = _db.Table<OrderDto>.QuerySingle("select * from order where id = @id",new{ id = 123});
+
+ // Dapper sql Query
+ var list = _db.DataBase.Query<OrderDto>("select * from order where id = @id",new{id > 123});  // Same as Dapper
+ var entity = _db.DataBase.QuerySingle<OrderDto>("select * from order where id = @id",new{ id = 123 }); 
 ```
 4. Insert ,update ,delete , with transaction   just like EF
 ```C#
@@ -114,7 +114,7 @@ public class OrderDto
     _db.SaveChange();   // realy begin to execute sql with transaction    
     var id = model.Id //   get AutoIncrement Id value
 ```
-5 .Insert   Aggregate entity 
+5 .Insert  Aggregate entity 
 ```C#
   IDBContext _db = new DapperDBContext("mssqldb");
      Order model = new Order()
@@ -184,3 +184,41 @@ public class OrderDto
     _db.SaveChange();  
     
 ```
+# Entity Attribute
+1. TableAttribute   has a name parameter
+```C#
+   [Table("table_name")]
+   public class Entity { }
+```
+2 .KeyAttribute   
+   primary key rule: 1:  property name is   Id or ID , 2:  property has Key Attribute .
+  
+```C#  
+   Inheriting ID primary key
+   public class Entity:IEntity { 
+      // Inheriting  id primary key and AutoIncrement
+   }
+   // or
+    public class Entity:Entity<string> { 
+                // Inheriting  id primary key
+   }
+   // or
+    public class Entity { 
+       public int Id    //  id primary key and AutoIncrement
+   }
+   //  or 
+   public class Entity { 
+      [key]
+       public int entityId  
+   }
+
+```
+3. ColumnAttribute                     
+```C#
+   [Table("table_name")]
+   public class Entity {
+     [Column("order_code")]
+      public string Code {ge;set;}
+   }
+```
+4 NotMappedAttribute   // not mapper to table column
