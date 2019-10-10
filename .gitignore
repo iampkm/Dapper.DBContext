@@ -159,3 +159,5 @@ $RECYCLE.BIN/
 *.k2k
 /.vs/Dapper.DBContext/v15/Server/sqlite3
 /packages/MySql.Data.6.9.12
+/.vs/Dapper.DBContext/v16/Server/sqlite3
+/.vs/Dapper.DBContext1.0/v16/Server/sqlite3
