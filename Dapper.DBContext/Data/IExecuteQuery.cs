@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 namespace Dapper.DBContext.Data
 {
     public interface IExecuteQuery
-    {
-        T ExecuteScalar<T>(string sql, object param);
-        Task<T> ExecuteScalarAsync<T>(string sql, object param);
-        IEnumerable<TEntity> Query<TEntity>(string sql, object param);
-        Task<IEnumerable<TEntity>> QueryAsync<TEntity>(string sql, object param);
-        TEntity QuerySingle<TEntity>(string sql, object param);
-        Task<TEntity> QuerySingleAsync<TEntity>(string sql, object param);
+    {        
+        T ExecuteScalar<T>(string sql, object param, int? timeout = null);
+        Task<T> ExecuteScalarAsync<T>(string sql, object param, int? timeout = null);
+        IEnumerable<TEntity> Query<TEntity>(string sql, object param, int? timeout = null);
+        Task<IEnumerable<TEntity>> QueryAsync<TEntity>(string sql, object param, int? timeout = null);
+        TEntity QuerySingle<TEntity>(string sql, object param, int? timeout = null);
+        Task<TEntity> QuerySingleAsync<TEntity>(string sql, object param, int? timeout = null);
     }
 }
