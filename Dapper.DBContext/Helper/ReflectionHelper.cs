@@ -64,9 +64,10 @@ namespace Dapper.DBContext.Helper
             var key = properties.Where(p => p.GetCustomAttributes(true).Any(attr => attr.GetType().Name == typeof(KeyAttribute).Name)).FirstOrDefault();
             if (key != null)
             {
-                if (key.GetType() == typeof(int)) { result = true; }
+                if (key.GetType() == typeof(int) || key.GetType() == typeof(long)) { result = true; }
             }
-            var keyPoperties = properties.Where(n => n.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && n.PropertyType == typeof(int)).FirstOrDefault();
+            var keyPoperties = properties.Where(n => n.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && (n.PropertyType == typeof(int)
+            || n.PropertyType == typeof(long))).FirstOrDefault();
             if (keyPoperties != null)
             {
                 result = true;
@@ -84,7 +85,7 @@ namespace Dapper.DBContext.Helper
                 var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
                 if (attrs != null) { continue; }
                 //get rid of rowVersion
-                if (pi.Name == _defaultRowVersion ) { continue; }
+                if (pi.Name == _defaultRowVersion) { continue; }
                 // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
                 if (pi.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && pi.PropertyType == typeof(int)) { continue; }
                 // get rid of the aggragation collection object 
@@ -151,7 +152,7 @@ namespace Dapper.DBContext.Helper
             string keyValue = "";
             if (propInfos.Count == 0)
             {
-               keyValue= model.ToString();
+                keyValue = model.ToString();
             }
             foreach (var pi in propInfos)
             {
