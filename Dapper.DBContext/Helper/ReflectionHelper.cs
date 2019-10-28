@@ -82,12 +82,12 @@ namespace Dapper.DBContext.Helper
             var properties = new List<string>();
             foreach (PropertyInfo pi in propertieInfos)
             {
-                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && pi.PropertyType == typeof(int)));
+                var attrs = pi.GetCustomAttributes(false).FirstOrDefault(attr => attr.GetType().Name == typeof(NotMappedAttribute).Name || (attr is KeyAttribute && (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long))));
                 if (attrs != null) { continue; }
                 //get rid of rowVersion
                 if (pi.Name == _defaultRowVersion) { continue; }
                 // get rid of identity key.  if type of propertie is int and Name is Id,then we think it is auto increment column.
-                if (pi.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && pi.PropertyType == typeof(int)) { continue; }
+                if (pi.Name.Equals(_defaultKey, StringComparison.OrdinalIgnoreCase) && (pi.PropertyType == typeof(int) || pi.PropertyType == typeof(long))) { continue; }
                 // get rid of the aggragation collection object 
                 if (pi.PropertyType.IsGenericType && pi.PropertyType.GetGenericArguments()[0].IsClass && pi.PropertyType.GetGenericArguments()[0] != typeof(string)) { continue; }
                 if (pi.GetGetMethod().IsVirtual && pi.PropertyType.IsClass && pi.PropertyType != typeof(string))
