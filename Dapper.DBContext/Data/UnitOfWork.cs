@@ -46,10 +46,11 @@ namespace Dapper.DBContext.Data
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
-                                executeResult = conn.ExecuteScalar<int>(model.Sql, model.ParamObj, tran);
+                                // executeResult = conn.ExecuteScalar<int>(model.Sql, model.ParamObj, tran);
+                                var identityValue = conn.ExecuteScalar(model.Sql, model.ParamObj, tran);
                                 if (!string.IsNullOrWhiteSpace(model.ParentIdName) && !_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    _ParentKeyDic.Add(model.ParentIdName, executeResult);
+                                    _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
                                 break;
                             case InsertMethodEnum.Child:                               
@@ -105,10 +106,10 @@ namespace Dapper.DBContext.Data
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
-                                executeResult = conn.ExecuteScalarAsync<int>(model.Sql, model.ParamObj, tran).Result;
+                                var identityValue = conn.ExecuteScalarAsync(model.Sql, model.ParamObj, tran).Result;
                                 if (!string.IsNullOrWhiteSpace(model.ParentIdName) && !_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    _ParentKeyDic.Add(model.ParentIdName, executeResult);
+                                    _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
                                 break;
                             case InsertMethodEnum.Child:
