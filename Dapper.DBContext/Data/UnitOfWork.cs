@@ -16,7 +16,7 @@ namespace Dapper.DBContext.Data
     {
         List<SqlArgument> _sqlList = new List<SqlArgument>();
         private Dictionary<string, object> _ParentKeyDic;
-       // string _connectionStringName;
+        // string _connectionStringName;
         IConnectionFactory _connectionFactory;
         public UnitOfWork(IConnectionFactory connectionFactory)
         {
@@ -52,16 +52,17 @@ namespace Dapper.DBContext.Data
                                 {
                                     _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
+                                executeResult = identityValue == null ? 0 : 1;
                                 break;
-                            case InsertMethodEnum.Child:                               
+                            case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
                                     executeSql = model.ReplaceParentIdValue(_ParentKeyDic[model.ParentIdName]);
                                 }
                                 executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
-                            default:                                
-                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);                             
+                            default:
+                                executeResult = conn.Execute(model.Sql, model.ParamObj, tran);
                                 break;
                         }
                         if (executeResult <= 0)
@@ -75,11 +76,11 @@ namespace Dapper.DBContext.Data
                     this._ParentKeyDic.Clear();
                 }
                 catch (Exception ex)
-                {     
+                {
                     tran.Rollback();
                     this._sqlList.Clear();
                     throw ex;
-                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
+                    // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
                 }
                 finally
                 {
@@ -111,6 +112,7 @@ namespace Dapper.DBContext.Data
                                 {
                                     _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
+                                executeResult = identityValue == null ? 0 : 1;
                                 break;
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
@@ -138,7 +140,7 @@ namespace Dapper.DBContext.Data
                     tran.Rollback();
                     this._sqlList.Clear();
                     throw ex;
-                   // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
+                    // throw new Exception(string.Format("sql exception.sql={0}", executeSql), ex);
                 }
                 finally
                 {
