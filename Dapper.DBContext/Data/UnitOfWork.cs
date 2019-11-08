@@ -47,13 +47,15 @@ namespace Dapper.DBContext.Data
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
-                                executeResult = conn.ExecuteScalar<int>(model.Sql, model.ParamObj, tran);
+                                var identityValue = conn.ExecuteScalar(model.Sql, model.ParamObj, tran);
+
                                 if (!string.IsNullOrWhiteSpace(model.ParentIdName) && !_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    _ParentKeyDic.Add(model.ParentIdName, executeResult);
+                                    _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
                                 // 设置主键自增ID 值
-                                ReflectionHelper.SetPrimaryKey(model.ParamObj, executeResult);
+                                ReflectionHelper.SetPrimaryKey(model.ParamObj, identityValue);
+                                executeResult = identityValue == null ? 0 : 1;
                                 break;
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
@@ -110,12 +112,13 @@ namespace Dapper.DBContext.Data
                         switch (model.InsertMethod)
                         {
                             case InsertMethodEnum.Parent:
-                                executeResult = conn.ExecuteScalarAsync<int>(model.Sql, model.ParamObj, tran).Result;
+                                var identityValue =  conn.ExecuteScalarAsync(model.Sql, model.ParamObj, tran).Result;
                                 if (!string.IsNullOrWhiteSpace(model.ParentIdName) && !_ParentKeyDic.ContainsKey(model.ParentIdName))
                                 {
-                                    _ParentKeyDic.Add(model.ParentIdName, executeResult);
+                                    _ParentKeyDic.Add(model.ParentIdName, identityValue);
                                 }
-                                ReflectionHelper.SetPrimaryKey(model.ParamObj, executeResult);
+                                ReflectionHelper.SetPrimaryKey(model.ParamObj, identityValue);
+                                executeResult = identityValue == null ? 0 : 1;
                                 break;
                             case InsertMethodEnum.Child:
                                 if (_ParentKeyDic.ContainsKey(model.ParentIdName))
