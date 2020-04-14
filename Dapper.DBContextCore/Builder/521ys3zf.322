@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Dapper.DBContext.Dialect
+{
+   public abstract class IConnectionFactory
+    {
+
+       public static IDbConnection Create(string connectionStringName)
+        {
+            string provider = ConfigurationManager.ConnectionStrings[connectionStringName].ProviderName;
+            if (string.IsNullOrEmpty(provider)) { throw new Exception("ProviderName is empty"); }
+            switch (provider)
+            {
+                case "System.Data.SqlClient":
+                    return CreateConnection(connectionStringName);
+                    break;
+                case "MySql.Data.MySqlClient":
+                    return CreateConnection(connectionStringName);
+                    break;
+                default:
+                    return CreateConnection(connectionStringName);
+                    break;
+            }           
+        }
+
+       public static abstract IDbConnection CreateConnection(string connectionStringName);
+      public static  ISqlBuilder Builder { get; }
+
+      public static IJoinQuery JoinBuilder { get; }
+    }
+}
