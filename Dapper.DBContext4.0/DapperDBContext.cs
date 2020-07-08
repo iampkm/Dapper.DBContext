@@ -41,12 +41,13 @@ namespace Dapper.DBContext
         {
             // 子类的外键名，必须是 父类名+默认ID名；
             string parentIdName = string.Format("{0}{1}", model.GetType().Name, ReflectionHelper.GetKeyName(model.GetType()));
-            string sql = this._builder.BuildInsert(model.GetType());         
+            string sql = this._builder.BuildInsert(model.GetType());
             if (ReflectionHelper.isIdentity(model.GetType()))
             {
                 this._uow.Add(sql, model, InsertMethodEnum.Parent, parentIdName);
             }
-            else {
+            else
+            {
                 this._uow.Add(sql, model);
             }
 
@@ -57,23 +58,29 @@ namespace Dapper.DBContext
             {
                 if (childObjItem == null) { continue; }
                 var childObjItemType = childObjItem.GetType();
-                var childObj = childObjItem as IEnumerable;
-                if (childObj != null)
+
+                var childSql = "";
+                if (childObjItemType.IsGenericType)
                 {
-                    var childObjList = childObj.GetEnumerator();
-                    if (childObjList.MoveNext())
-                    {
-                        childObjItemType = childObjList.Current.GetType();
-                    }
+                    // 1:N                  
+                    var childObjList = (childObjItem as IEnumerable).GetEnumerator();
+                    if (!childObjList.MoveNext()) { continue; } //  有外键定义，但无数据，不用生成子对象sql 语句
+                    var childObjElementType = childObjItemType.GetGenericArguments().FirstOrDefault();
+                    childSql = this._builder.BuildInsert(childObjElementType);
                 }
-                var childSql = this._builder.BuildInsert(childObjItemType);
+                else
+                {
+                    // 1:1
+                    childSql = this._builder.BuildInsert(childObjItemType);
+                }
                 if (ReflectionHelper.isIdentity(model.GetType()))
                 {
                     this._uow.Add(childSql, childObjItem, InsertMethodEnum.Child, parentIdName);
                 }
-                else {
+                else
+                {
                     this._uow.Add(childSql, childObjItem);
-                }                
+                }
             }
         }
 
@@ -121,23 +128,23 @@ namespace Dapper.DBContext
         public void Delete<TEntity>(object id) where TEntity : class
         {
             if (id == null) throw new Exception("id is empty");
-            if (id is Array) throw new Exception("id 不能为数组"); 
+            if (id is Array) throw new Exception("id 不能为数组");
             string sql = this._builder.BuildDelete(typeof(TEntity));
             this._uow.Add(sql, new { Id = id });
         }
         public void Delete<TEntity>(Array ids) where TEntity : class
         {
-            if (ids == null) throw new Exception("id is empty");           
-            string sql = this._builder.BuildDelete(typeof(TEntity),false);
+            if (ids == null) throw new Exception("id is empty");
+            string sql = this._builder.BuildDelete(typeof(TEntity), false);
             this._uow.Add(sql, new { Id = ids });
         }
 
         public void Delete<TEntity>(System.Linq.Expressions.Expression<Func<TEntity, bool>> expression) where TEntity : class
         {
             if (expression == null) throw new Exception("参数不能为空");
-             object args = new object();
-             string sql = this._builder.buildDeleteByLamda<TEntity>(expression, out args);
-             this._uow.Add(sql, args);
+            object args = new object();
+            string sql = this._builder.buildDeleteByLamda<TEntity>(expression, out args);
+            this._uow.Add(sql, args);
         }
 
         public void SaveChange()
